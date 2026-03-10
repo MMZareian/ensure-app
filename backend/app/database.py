@@ -89,6 +89,12 @@ def get_database() -> Database:
     global db_instance
     if db_instance is None:
         # Path to database: ensure-app/data/ensure_mock.sqlite
+        # Works both locally and on DigitalOcean
         db_path = Path(__file__).parent.parent.parent / "data" / "ensure_mock.sqlite"
+
+        # Fallback: if data folder doesn't exist, try parent directory
+        if not db_path.exists():
+            db_path = Path(__file__).parent.parent / "data" / "ensure_mock.sqlite"
+
         db_instance = Database(str(db_path))
     return db_instance
