@@ -1,0 +1,382 @@
+# Ensure Safety Analytics - System Diagram
+
+================================================================================
+                     ENSURE SAFETY ANALYTICS SYSTEM
+                         Full Stack Architecture
+================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│                          USER'S WEB BROWSER                               │
+│                      http://localhost:3000                                │
+│                                                                           │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │                    REACT FRONTEND (TypeScript)                      │ │
+│  │                                                                      │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌──────────┐  │ │
+│  │  │  Overview   │  │  Scenarios  │  │ Comparison  │  │ Workers  │  │ │
+│  │  │     Tab     │  │     Tab     │  │     Tab     │  │   Tab    │  │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘  └──────────┘  │ │
+│  │                                                                      │ │
+│  │  ┌────────────────────────────────────────────────────────────┐    │ │
+│  │  │              Reusable Components                            │    │ │
+│  │  │  • EnergyWheel (Canvas chart)                              │    │ │
+│  │  │  • RagBanner (Status indicator)                            │    │ │
+│  │  │  • Pill (Score badges)                                     │    │ │
+│  │  └────────────────────────────────────────────────────────────┘    │ │
+│  │                                                                      │ │
+│  │  ┌────────────────────────────────────────────────────────────┐    │ │
+│  │  │              API Client (api/client.ts)                     │    │ │
+│  │  │  Manages all communication with backend                     │    │ │
+│  │  └────────────────────────────────────────────────────────────┘    │ │
+│  │                                                                      │ │
+│  └──────────────────────────────┬───────────────────────────────────────┘ │
+└─────────────────────────────────┼─────────────────────────────────────────┘
+                                  │
+                  HTTP/JSON API Requests
+                  (fetch calls)
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│                        FASTAPI BACKEND (Python)                           │
+│                      http://localhost:8000                                │
+│                                                                           │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │                      app/main.py (Entry Point)                      │ │
+│  │  • Creates FastAPI app                                              │ │
+│  │  • Configures CORS                                                  │ │
+│  │  • Includes all routers                                             │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+│                                                                           │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │                     API ROUTERS (Endpoints)                         │ │
+│  │                                                                      │ │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐             │ │
+│  │  │   Projects   │  │  Scenarios   │  │  Comparison  │             │ │
+│  │  │   Router     │  │   Router     │  │   Router     │             │ │
+│  │  │              │  │              │  │              │             │ │
+│  │  │ • GET list   │  │ • GET detail │  │ • GET radar  │             │ │
+│  │  │ • GET overvw │  │ • GET compre │  │ • GET table  │             │ │
+│  │  │ • GET scenes │  │              │  │ • GET bench  │             │ │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘             │ │
+│  │                                                                      │ │
+│  │  ┌──────────────┐                                                   │ │
+│  │  │   Workers    │                                                   │ │
+│  │  │   Router     │                                                   │ │
+│  │  │              │                                                   │ │
+│  │  │ • GET summary│                                                   │ │
+│  │  │ • GET trends │                                                   │ │
+│  │  └──────────────┘                                                   │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+│                                                                           │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │                    SERVICES (Business Logic)                        │ │
+│  │                                                                      │ │
+│  │  ┌─────────────────────────┐  ┌────────────────────────────────┐  │ │
+│  │  │    analytics.py         │  │        queries.py              │  │ │
+│  │  │  • calculate_energy_*() │  │  • get_all_projects()          │  │ │
+│  │  │  • calculate_worker_*() │  │  • get_hazard_responses_*()    │  │ │
+│  │  │  • get_rag_status()     │  │  • get_scenarios_*()           │  │ │
+│  │  └─────────────────────────┘  └────────────────────────────────┘  │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+│                                                                           │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │                 DATABASE CONNECTION (database.py)                   │ │
+│  │  • execute_query() - Run SELECT queries                             │ │
+│  │  • execute_one() - Get single result                                │ │
+│  │  • get_database() - Singleton instance                              │ │
+│  └──────────────────────────────┬───────────────────────────────────────┘ │
+└─────────────────────────────────┼─────────────────────────────────────────┘
+                                  │
+                          SQL Queries
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│                      SQLITE DATABASE (SQLite3)                            │
+│                   data/ensure_mock.sqlite (5MB)                           │
+│                                                                           │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │                           DATABASE TABLES                           │ │
+│  │                                                                      │ │
+│  │  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────────┐  │ │
+│  │  │   projects      │  │   scenarios     │  │   workers        │  │ │
+│  │  │   (5 rows)      │  │   (8 rows)      │  │   (~50 rows)     │  │ │
+│  │  │                 │  │                 │  │                  │  │ │
+│  │  │ • id            │  │ • scenario_id   │  │ • worker_id      │  │ │
+│  │  │ • name          │  │ • project_id    │  │ • project_id     │  │ │
+│  │  │ • region        │  │ • name          │  │ • worker_name    │  │ │
+│  │  │ • company_name  │  │ • date          │  │ • role           │  │ │
+│  │  │ • industry      │  │ • worker_count  │  │ • experience     │  │ │
+│  │  └─────────────────┘  └─────────────────┘  └──────────────────┘  │ │
+│  │                                                                      │ │
+│  │  ┌─────────────────────────────────────────────────────────────┐  │ │
+│  │  │            hazard_responses (~2700 rows)                     │  │ │
+│  │  │            [CORE DATA TABLE]                                 │  │ │
+│  │  │                                                               │  │ │
+│  │  │ • scenario_id                                                 │  │ │
+│  │  │ • worker_id                                                   │  │ │
+│  │  │ • energy_id                                                   │  │ │
+│  │  │ • identified_correctly (0/1)                                  │  │ │
+│  │  │ • marked_high_energy (0/1)                                    │  │ │
+│  │  │ • correct_high_energy (0/1)                                   │  │ │
+│  │  │ • marked_direct_control (0/1)                                 │  │ │
+│  │  │ • correct_direct_control (0/1)                                │  │ │
+│  │  └─────────────────────────────────────────────────────────────┘  │ │
+│  │                                                                      │ │
+│  │  ┌─────────────────┐  ┌──────────────────────────────────────┐   │ │
+│  │  │ energy_types    │  │   industry_benchmark                 │   │ │
+│  │  │ (10 rows)       │  │   (10 rows)                          │   │ │
+│  │  │                 │  │                                      │   │ │
+│  │  │ • id            │  │ • energy_id                          │   │ │
+│  │  │ • label         │  │ • ident_score                        │   │ │
+│  │  │ • icon          │  │ • high_score                         │   │ │
+│  │  │ • color         │  │ • control_score                      │   │ │
+│  │  └─────────────────┘  └──────────────────────────────────────┘   │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+                              DATA FLOW EXAMPLE
+                    "User Clicks Overview Tab for Project A"
+================================================================================
+
+ 1. USER ACTION
+    └─→ Clicks "Overview" tab in browser
+
+ 2. REACT COMPONENT
+    └─→ OverviewTab.tsx renders
+        └─→ useEffect hook triggered
+            └─→ Calls: projectsAPI.getOverview('p1')
+
+ 3. API CLIENT
+    └─→ client.ts sends HTTP request
+        └─→ fetch('http://localhost:8000/api/projects/p1/overview')
+
+ 4. FASTAPI ROUTER
+    └─→ app/routers/projects.py receives request
+        └─→ Function: get_project_overview(project_id='p1')
+
+ 5. DATABASE QUERIES
+    └─→ queries.get_project_by_id('p1')
+        └─→ SQL: SELECT * FROM projects WHERE id = 'p1'
+    └─→ queries.get_hazard_responses_by_project('p1')
+        └─→ SQL: SELECT * FROM hazard_responses WHERE project_id = 'p1'
+        └─→ Returns: 340 rows (34 workers × 10 energy types)
+
+ 6. ANALYTICS CALCULATION
+    └─→ analytics.calculate_energy_breakdown(hazard_responses)
+        └─→ Groups by energy_id
+        └─→ Counts correct/total for each metric
+        └─→ Calculates percentages
+
+ 7. RESPONSE BUILDING
+    └─→ Creates ProjectOverview object:
+        {
+          project: {...},
+          totalScenarios: 3,
+          totalSessions: 34,
+          highAccAll: 76,
+          ctrlAccAll: 74,
+          ragScore: 75,
+          energyBreakdown: [10 energy types with scores]
+        }
+
+ 8. VALIDATION
+    └─→ Pydantic validates response structure
+        └─→ Ensures all required fields present
+
+ 9. JSON RESPONSE
+    └─→ FastAPI converts to JSON
+        └─→ Sends back to frontend
+
+10. FRONTEND RECEIVES
+    └─→ client.ts receives JSON
+        └─→ TypeScript validates types
+
+11. STATE UPDATE
+    └─→ setOverview(data)
+        └─→ React re-renders component
+
+12. UI RENDERING
+    └─→ KPI cards display numbers
+    └─→ RagBanner shows Green/Amber/Red
+    └─→ EnergyWheel draws canvas chart
+
+13. USER SEES
+    └─→ Updated dashboard with real data!
+
+================================================================================
+                            FILE RELATIONSHIPS
+================================================================================
+
+FRONTEND FILES:
+src/
+├── main.tsx                    ──┐
+│                                 │ imports
+├── App.tsx                    ◄──┘
+│   ├── imports tabs/
+│   │   ├── OverviewTab.tsx    ◄─── imports components/ & api/
+│   │   ├── ScenariosTab.tsx   ◄─── imports components/ & api/
+│   │   ├── WorkersTab.tsx     ◄─── imports components/ & api/
+│   │   └── ComparisonTab.tsx
+│   │
+│   ├── imports components/
+│   │   ├── EnergyWheel.tsx
+│   │   ├── RagBanner.tsx
+│   │   └── Pill.tsx
+│   │
+│   ├── imports api/
+│   │   └── client.ts          ◄─── imports types/
+│   │
+│   └── imports types/
+│       └── index.ts
+│
+└── styles.css (imported by App.tsx)
+
+BACKEND FILES:
+app/
+├── main.py                     ──┐
+│                                 │ includes
+├── routers/                   ◄──┘
+│   ├── projects.py            ─┬── imports models, queries, analytics
+│   ├── scenarios.py           ─┤
+│   ├── comparison.py          ─┤
+│   └── workers.py             ─┘
+│
+├── services/
+│   ├── queries.py             ◄─── imports database
+│   └── analytics.py           (pure functions, no imports)
+│
+├── database.py                (standalone)
+└── models.py                  (Pydantic models, standalone)
+
+DATABASE:
+data/ensure_mock.sqlite
+└── Contains all tables (projects, scenarios, workers, hazard_responses, etc.)
+
+================================================================================
+                         TECHNOLOGY STACK DIAGRAM
+================================================================================
+
+┌────────────────────────────────────────────────────────────────┐
+│                        PRESENTATION LAYER                       │
+│  • HTML5 + CSS3                                                 │
+│  • React 18.2.0 (UI Library)                                    │
+│  • TypeScript 5.2.2 (Type Safety)                               │
+│  • Vite 5.0.8 (Build Tool)                                      │
+│  • Canvas API (Energy Wheel)                                    │
+└────────────────────────────────────────────────────────────────┘
+                              ↕ HTTP/JSON
+┌────────────────────────────────────────────────────────────────┐
+│                        APPLICATION LAYER                        │
+│  • FastAPI 0.109.0 (Web Framework)                              │
+│  • Uvicorn 0.27.0 (ASGI Server)                                 │
+│  • Pydantic 2.5.3 (Data Validation)                             │
+│  • Python 3.11 (Programming Language)                           │
+└────────────────────────────────────────────────────────────────┘
+                              ↕ SQL
+┌────────────────────────────────────────────────────────────────┐
+│                          DATA LAYER                             │
+│  • SQLite 3.x (Database)                                        │
+│  • 5 tables, ~2800 rows                                         │
+│  • File-based storage (ensure_mock.sqlite)                      │
+└────────────────────────────────────────────────────────────────┘
+
+================================================================================
+                           PORT ASSIGNMENTS
+================================================================================
+
+8000  ─→  Backend (FastAPI/Uvicorn)
+3000  ─→  Frontend (Vite Dev Server)
+
+When deployed to production:
+443   ─→  HTTPS (combined frontend + backend)
+80    ─→  HTTP (redirects to HTTPS)
+
+================================================================================
+                        DOCUMENTATION STRUCTURE
+================================================================================
+
+ensure-app/
+├── START_HERE.md           ◄── YOU ARE HERE! Navigation guide
+├── QUICK_REFERENCE.md      ◄── 1-page cheat sheet
+├── USER_GUIDE.md           ◄── How to use (5000 words)
+├── DOCUMENTATION.md        ◄── Technical details (15000 words)
+├── PROJECT_SUMMARY.md      ◄── Overview (2500 words)
+├── SYSTEM_DIAGRAM.txt      ◄── This file! Visual diagrams
+├── README.md               ◄── Introduction
+└── backend/README.md       ◄── Backend-specific docs
+
+Total: 25,000+ words of documentation
+
+================================================================================
+                            DEPLOYMENT DIAGRAM
+                              (Future State)
+================================================================================
+
+                         ┌─────────────────┐
+                         │  USERS          │
+                         │  (Web Browsers) │
+                         └────────┬────────┘
+                                  │
+                                  │ HTTPS
+                                  │
+                         ┌────────▼────────┐
+                         │  DIGITALOCEAN   │
+                         │  APP PLATFORM   │
+                         │                 │
+                         │  ┌───────────┐  │
+                         │  │  CDN      │  │ ◄── Static Files (React)
+                         │  │  Frontend │  │
+                         │  └───────────┘  │
+                         │                 │
+                         │  ┌───────────┐  │
+                         │  │  Backend  │  │ ◄── API (FastAPI)
+                         │  │  (Python) │  │
+                         │  └─────┬─────┘  │
+                         │        │        │
+                         │  ┌─────▼─────┐  │
+                         │  │PostgreSQL │  │ ◄── Database
+                         │  │  Database │  │
+                         │  └───────────┘  │
+                         └─────────────────┘
+
+================================================================================
+                              SECURITY LAYERS
+                              (Future State)
+================================================================================
+
+ LAYER 1: Network Security
+ └─→ HTTPS/SSL (TLS 1.3)
+ └─→ CORS (Restricted origins)
+ └─→ Rate Limiting
+
+ LAYER 2: Authentication
+ └─→ JWT Tokens
+ └─→ User/Password or SSO
+ └─→ Session Management
+
+ LAYER 3: Authorization
+ └─→ Role-Based Access Control (RBAC)
+ └─→ Admin / Manager / Viewer roles
+
+ LAYER 4: Data Security
+ └─→ SQL Injection Protection (Parameterized queries)
+ └─→ Input Validation (Pydantic)
+ └─→ Output Sanitization
+
+ LAYER 5: Application Security
+ └─→ Environment Variables (secrets)
+ └─→ Audit Logging
+ └─→ Error Handling
+
+================================================================================
+
+END OF SYSTEM DIAGRAM
+
+For more details, see:
+- DOCUMENTATION.md (technical deep-dive)
+- USER_GUIDE.md (how to use)
+- QUICK_REFERENCE.md (commands)
+
+Version: 1.0
+Last Updated: March 9, 2026
