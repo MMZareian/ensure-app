@@ -1,104 +1,111 @@
-# Deploy to DigitalOcean - Simple Guide
+# Deploy to DigitalOcean - Updated Guide
 
-## Step 1: Push to GitHub
+## Step 1: Push to GitHub (Already Done ✅)
 
-Your code is already set up! Just push the latest changes:
-
-```bash
-cd "C:\Users\mahdi\PycharmProjects\DigitalOcean\ensure-app"
-git add .
-git commit -m "Ready for DigitalOcean deployment"
-git push origin main
-```
-
-## Step 2: Deploy on DigitalOcean
-
-### Method 1: Import App Spec (Easiest)
-
-1. Go to https://cloud.digitalocean.com/apps
-2. Click **"Create App"**
-3. Select **GitHub** and choose your repo: `MMZareian/ensure-app`
-4. Click **"Next"**
-5. When you see the error, click **"Edit App Spec"**
-6. Copy and paste this:
-
-```yaml
-name: ensure-safety-analytics
-region: nyc
-
-services:
-  - name: backend
-    environment_slug: python
-    github:
-      branch: main
-      deploy_on_push: true
-      repo: MMZareian/ensure-app
-    source_dir: /backend
-    run_command: uvicorn app.main:app --host 0.0.0.0 --port 8080
-    http_port: 8080
-    instance_count: 1
-    instance_size_slug: basic-xxs
-    routes:
-      - path: /api
-
-  - name: frontend
-    environment_slug: node-js
-    github:
-      branch: main
-      deploy_on_push: true
-      repo: MMZareian/ensure-app
-    source_dir: /frontend
-    build_command: npm install && npm run build
-    output_dir: dist
-    routes:
-      - path: /
-```
-
-7. Click **"Save"**
-8. Click **"Next"** → Choose **Basic plan ($5/month)**
-9. Click **"Launch App"**
-
-Done! Your app will be live in 5 minutes.
+Your code is already on GitHub at: https://github.com/MMZareian/ensure-app
 
 ---
 
-### Method 2: Manual Setup
+## Step 2: Deploy on DigitalOcean
 
-If you don't see "Edit App Spec":
+### Go to DigitalOcean App Platform
 
-1. After connecting GitHub, click **"Add Component Manually"**
+1. Visit: https://cloud.digitalocean.com/apps
+2. Click **"Create App"**
+3. Select **"GitHub"**
+4. Choose repository: **MMZareian/ensure-app**
+5. Branch: **main**
+6. Click **"Next"**
 
-2. **Add Backend:**
-   - Click **"+ Web Service"**
-   - Name: `backend`
-   - Source Directory: `backend`
-   - Run Command: `uvicorn app.main:app --host 0.0.0.0 --port 8080`
-   - HTTP Port: `8080`
+### Configure Resources (Manual Setup)
 
-3. **Add Frontend:**
-   - Click **"+ Static Site"**
-   - Name: `frontend`
-   - Source Directory: `frontend`
-   - Build Command: `npm install && npm run build`
-   - Output Directory: `dist`
+Since you see "No components detected" error, you need to add components manually:
 
-4. Click **"Next"** and deploy
+#### In the "Source Directory" box, enter: `frontend`
+Then click **"Next"** or **"Detect from source code"**
+
+This will detect the frontend. Now you need to add backend:
+
+1. Click **"Add Resource"** or **"Add Component"**
+2. Select **"Web Service"** (for backend)
+
+**Backend Configuration:**
+- **Name**: `backend`
+- **Source Directory**: `backend`
+- **Build Command**: Leave empty
+- **Run Command**: `uvicorn app.main:app --host 0.0.0.0 --port 8080`
+- **HTTP Port**: `8080`
+
+3. Your frontend should already be detected as a **Static Site**
+
+**Frontend Configuration (verify these):**
+- **Name**: `frontend`
+- **Source Directory**: `frontend`
+- **Build Command**: `npm install && npm run build`
+- **Output Directory**: `dist`
+
+### Review Routes
+
+Make sure:
+- Backend routes: `/api`
+- Frontend routes: `/` (catchall)
+
+### Choose Plan
+- Backend: **Basic ($5/month)** or **Free trial if available**
+- Frontend: **Free** (static sites are free)
+
+### Launch
+
+Click **"Launch App"** or **"Create Resources"**
+
+---
+
+## Step 3: Wait for Deployment
+
+Build takes 3-5 minutes. You'll see:
+1. Building backend...
+2. Building frontend...
+3. Deploying...
+4. ✅ Live!
 
 ---
 
 ## Your App URL
 
-After deployment, you'll get a URL like:
+After successful deployment:
 ```
 https://ensure-safety-analytics-xxxxx.ondigitalocean.app
 ```
 
-## Cost
+or similar URL based on your app name.
 
-- Backend: $5/month
-- Frontend: Free
-- **Total: $5/month**
+---
+
+## If Deployment Still Fails
+
+### Option 1: Try entering source directory during setup
+In the initial "Source Directory" field, try: `frontend`
+
+### Option 2: Contact DigitalOcean
+Their interface might need GitHub permissions refresh.
+
+### Option 3: Use doctl CLI (Advanced)
+
+Install DigitalOcean CLI and run:
+```bash
+doctl apps create --spec .do/app.yaml
+```
+
+---
+
+## Cost Summary
+
+- **Backend**: $5/month (Basic plan)
+- **Frontend**: FREE (static hosting)
+- **Total**: ~$5/month
+
+---
 
 ## Need Help?
 
-If deployment fails, check the build logs in DigitalOcean dashboard.
+Check build logs in DigitalOcean dashboard under your app → "Runtime Logs"

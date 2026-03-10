@@ -1,0 +1,16 @@
+{
+  "name": "ensure-app",
+  "version": "1.0.0",
+  "description": "Ensure Safety Analytics Dashboard",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && pip install -r requirements.txt",
+    "build": "cd frontend && npm run build",
+    "start:frontend": "cd frontend && npm run dev",
+    "start:backend": "cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8080"
+  }
+}
