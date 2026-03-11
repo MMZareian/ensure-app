@@ -1,198 +1,344 @@
-# Ensure Safety Analytics Dashboard
+# Ensure Safety Analytics Platform
 
-A full-stack web application for analyzing safety training data in offshore/industrial environments.
+A professional full-stack web application for safety training analytics with **multi-company authentication** and comprehensive data visualization.
 
-## 🏗️ Architecture
+## 🎯 Overview
 
-**Backend:** FastAPI + Python + SQLite
-**Frontend:** React + TypeScript + Vite
-**Deployment Target:** DigitalOcean App Platform
+**Ensure** helps safety managers track and analyze worker training performance across multiple projects and scenarios. Features include:
 
-## 📁 Project Structure
+- 🔐 **Multi-Company Authentication** - Secure login for managers
+- 📊 **Project Dashboards** - KPIs, energy wheels, and performance metrics
+- 📈 **Scenario Analysis** - Track training scenarios and worker performance
+- 🔍 **Cross-Company Comparison** - Benchmark against other projects
+- 👥 **Worker Trends** - Individual performance tracking over time
 
-```
-ensure-app/
-├── backend/          # FastAPI application
-│   ├── app/
-│   │   ├── main.py           # FastAPI entry point
-│   │   ├── database.py       # SQLite connection
-│   │   ├── models.py         # Pydantic models
-│   │   ├── routers/          # API endpoints
-│   │   │   ├── projects.py
-│   │   │   ├── scenarios.py
-│   │   │   ├── comparison.py
-│   │   │   └── workers.py
-│   │   └── services/         # Business logic
-│   │       ├── analytics.py  # Calculations
-│   │       └── queries.py    # Database queries
-│   ├── requirements.txt
-│   └── README.md
-│
-├── frontend/         # React application
-│   ├── src/
-│   │   ├── components/       # Reusable UI components
-│   │   ├── tabs/             # Main tab views
-│   │   ├── api/              # API client
-│   │   ├── types/            # TypeScript types
-│   │   ├── App.tsx           # Main app
-│   │   └── styles.css        # Global styles
-│   ├── package.json
-│   └── index.html
-│
-├── data/             # SQLite database
-│   └── ensure_mock.sqlite
-│
-└── README.md (this file)
-```
+---
 
-## 🚀 Getting Started
+## 🏗️ Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | React 18 + TypeScript + Vite |
+| **Backend** | FastAPI (Python 3.11) |
+| **Database** | SQLite (dev) → PostgreSQL (production) |
+| **Charts** | Chart.js + react-chartjs-2 |
+| **Deployment** | DigitalOcean App Platform |
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.11+ (installed ✅)
-- Node.js 24.x LTS (installed ✅)
-- npm 11.x (installed ✅)
+- Python 3.11+
+- Node.js 24.14.0 LTS
+- Git
 
-### Backend Setup
+### 1. Clone Repository
+```bash
+cd C:\Users\mahdi\PycharmProjects\DigitalOcean
+git clone https://github.com/MMZareian/ensure-app.git
+cd ensure-app
+```
 
+### 2. Start Backend
 ```bash
 cd backend
 pip install -r requirements.txt
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Backend will be available at: http://localhost:8000
-API Documentation: http://localhost:8000/docs
+Backend runs at: **http://localhost:8000**
 
-### Frontend Setup
-
+### 3. Start Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-Frontend will be available at: http://localhost:3000
+Frontend runs at: **http://localhost:3000**
+
+### 4. Login
+Open http://localhost:3000 and use any of these credentials:
+
+| Username | Password | Company | Projects |
+|----------|----------|---------|----------|
+| `sarah.johnson` | `password123` | Apex Construction Ltd | 2 projects |
+| `emma.davis` | `password123` | TechBuild Solutions | 2 projects |
+| `lisa.martinez` | `password123` | SafeWorks Industrial | 1 project |
+
+---
+
+## 📁 Project Structure
+
+```
+ensure-app/
+├── backend/                      # FastAPI application
+│   ├── app/
+│   │   ├── main.py              # App entry point
+│   │   ├── database.py          # Database connection
+│   │   ├── models.py            # Pydantic models
+│   │   ├── routers/             # API endpoints
+│   │   │   ├── auth.py          # Authentication ✨ NEW
+│   │   │   ├── projects.py      # Project APIs
+│   │   │   ├── scenarios.py     # Scenario APIs
+│   │   │   ├── comparison.py    # Comparison APIs
+│   │   │   └── workers.py       # Worker APIs
+│   │   └── services/
+│   │       ├── analytics.py     # Score calculations
+│   │       └── queries.py       # Database queries
+│   ├── data/
+│   │   └── ensure_mock.sqlite   # SQLite database
+│   └── requirements.txt
+│
+├── frontend/                     # React application
+│   ├── src/
+│   │   ├── pages/
+│   │   │   └── LoginPage.tsx    # Login interface ✨ NEW
+│   │   ├── contexts/
+│   │   │   └── AuthContext.tsx  # Auth state ✨ NEW
+│   │   ├── components/
+│   │   │   ├── Topbar.tsx       # Navigation + user info ✨ NEW
+│   │   │   ├── EnergyWheel.tsx  # Custom chart
+│   │   │   ├── Pill.tsx         # Score badges
+│   │   │   └── RagBanner.tsx    # RAG indicators
+│   │   ├── tabs/
+│   │   │   ├── OverviewTab.tsx  # Project dashboard
+│   │   │   ├── ScenariosTab.tsx # Scenario browser
+│   │   │   ├── ComparisonTab.tsx # Multi-project comparison
+│   │   │   └── WorkersTab.tsx   # Worker trends
+│   │   ├── api/
+│   │   │   └── client.ts        # API wrapper
+│   │   ├── types/
+│   │   │   └── index.ts         # TypeScript types
+│   │   ├── App.tsx              # Main component
+│   │   └── styles.css           # Global styles
+│   └── package.json
+│
+├── data/
+│   ├── ensure_mock.sqlite       # Database (with auth data)
+│   └── rebuild_database.py      # Database regeneration script ✨ NEW
+│
+└── Documentation/               # See below
+```
+
+---
+
+## 🔐 Authentication System
+
+### Database Schema
+```
+companies
+├── company_id (PK)
+├── company_name
+├── industry
+└── created_at
+
+managers (users)
+├── manager_id (PK)
+├── company_id (FK)
+├── username (unique)
+├── password
+├── full_name
+├── email
+├── role (admin/manager)
+└── last_login
+
+projects
+├── id (PK)
+├── company_id (FK) ✨ NEW
+├── name
+├── region
+└── ...
+```
+
+### Access Control
+
+**Company-Filtered Tabs:**
+- **Overview** - Only shows company's projects
+- **Scenarios** - Only company's scenarios
+- **Workers** - Only company's workers
+
+**Cross-Company Tab:**
+- **Comparison** - Shows ALL projects for benchmarking
+
+---
+
+## 🌐 API Endpoints
+
+### Authentication
+- `POST /api/auth/login` - Authenticate user
+- `POST /api/auth/logout` - Logout
+- `GET /api/auth/me?token={token}` - Get current user info
+
+### Projects
+- `GET /api/projects` - List all projects
+- `GET /api/projects?company_id={id}` - Filter by company ✨ NEW
+- `GET /api/projects/{id}/overview` - Project dashboard data
+- `GET /api/projects/{id}/scenarios` - Project scenarios
+
+### Scenarios
+- `GET /api/scenarios/{id}` - Scenario details
+
+### Comparison
+- `GET /api/comparison/projects` - Radar chart data
+- `GET /api/comparison/table` - Comparison table data
+
+### Workers
+- `GET /api/workers/summary` - Worker summary stats
+- `GET /api/workers/trends` - Worker performance trends
+
+---
 
 ## 📊 Features
 
-### ✅ Implemented
-- **Overview Tab**
-  - Project selector
-  - KPI cards (scenarios, workers, accuracy metrics)
-  - RAG status banner
-  - Energy Wheel visualization (3 modes: Identification, High Energy, Direct Control)
+### 1. Project Overview Tab
+- **KPI Cards**: Scenarios completed, high-energy accuracy, control accuracy
+- **RAG Score**: Red/Amber/Green safety classification
+- **Energy Wheel**: Custom circular chart showing 10 energy types
+- **Mode Toggle**: View identification, high energy, or direct control scores
 
-- **Scenarios Tab**
-  - List all scenarios for selected project
-  - Visual energy type breakdown
-  - Average worker scores
-  - Weak/strong energy types highlighted
+### 2. Scenarios Tab
+- Browse all scenarios for selected project
+- View scenario details with worker-level data
+- Expandable cards with hazard responses
 
-- **Workers Tab**
-  - Worker summary table
-  - Average scores across all scenarios
-  - Identification, High Energy, and Direct Control metrics
+### 3. Comparison Tab
+- **Radar Charts**: Compare multiple projects simultaneously
+- **Project Toggles**: Select up to 5 projects + industry benchmark
+- **Full Breakdown Table**: All metrics across all projects
+- **Cross-Company**: Shows ALL projects regardless of user's company ✨
 
-- **Comparison Tab** (Placeholder - ready for expansion)
+### 4. Workers Tab
+- **Summary Table**: Average scores per worker
+- **Expandable Cards**: Click to see performance trends
+- **Trend Charts**: Line charts showing improvement over scenarios
+- **Project/Scenario Filters**: Filter by project or specific scenario
 
-### 🔄 API Endpoints
+---
 
-```
-GET  /api/projects                             # List all projects
-GET  /api/projects/{id}/overview               # Project overview data
-GET  /api/projects/{id}/scenarios              # Project scenarios
-GET  /api/scenarios/{id}                       # Scenario detail
-GET  /api/scenarios/compare?scenario_a=&scenario_b= # Compare scenarios
-GET  /api/comparison/projects?project_ids=...  # Comparison radar data
-GET  /api/comparison/table?project_ids=...     # Comparison table data
-GET  /api/workers/summary?project_id=&scenario_id= # Worker summary
-GET  /api/workers/trends?project_id=           # Worker trends
-GET  /api/industry/benchmark                   # Industry benchmark
-```
+## 🗂️ Documentation Files
 
-## 🎨 Design
+| File | Purpose | Status |
+|------|---------|--------|
+| `README.md` | Main project documentation | ✅ **YOU ARE HERE** |
+| `AUTHENTICATION_UPDATE.md` | Authentication implementation details | ✅ Current |
+| `PROGRESS.md` | Implementation progress tracker | ✅ Current |
+| `DEPLOY.md` | DigitalOcean deployment guide | ✅ Current |
+| ~~`DOCUMENTATION.md`~~ | Old detailed docs | ⚠️ **OUTDATED - DELETE** |
+| ~~`USER_GUIDE.md`~~ | Old user guide | ⚠️ **OUTDATED - DELETE** |
+| ~~`QUICK_REFERENCE.md`~~ | Old quick ref | ⚠️ **OUTDATED - DELETE** |
+| ~~`PROJECT_SUMMARY.md`~~ | Old summary | ⚠️ **OUTDATED - DELETE** |
+| ~~`START_HERE.md`~~ | Old navigation | ⚠️ **OUTDATED - DELETE** |
+| ~~`SYSTEM_DIAGRAM.txt`~~ | Old diagrams | ⚠️ **OUTDATED - DELETE** |
 
-- **Fonts:** DM Sans (body), Playfair Display (headings)
-- **Color Scheme:** Clean blue/gray with energy-type specific colors
-- **Responsive:** Mobile-friendly design
-- **Charts:** Canvas-based Energy Wheel, Chart.js ready for expansion
+---
 
-## 📊 Data Model
+## 🚢 Deployment to DigitalOcean
 
-### Energy Types (10)
-- Gravity, Motion, Pressure, Electrical, Mechanical
-- Sound, Biological, Chemical, Radiation, Temperature
+See **[DEPLOY.md](DEPLOY.md)** for detailed deployment instructions.
 
-### Projects (5)
-- Project A (North Sea)
-- Project B (Baltic)
-- Project C (Arctic)
-- Project D (Gulf)
-- Project E (Caspian)
+**Quick Summary:**
+1. Push to GitHub
+2. Go to https://cloud.digitalocean.com/apps
+3. Connect GitHub repo `MMZareian/ensure-app`
+4. Import app spec from `.do/app.yaml`
+5. Deploy!
 
-### Metrics Tracked
-- **Identification Score:** % correctly identified hazards
-- **High Energy Score:** % correctly classified as high/low energy
-- **Direct Control Score:** % correctly classified as directly controllable
+**Cost:** ~$5/month (backend $5 + frontend free)
 
-### RAG Thresholds
-- 🟢 Green (On Track): ≥75%
-- 🟡 Amber (Needs Attention): 60-74%
-- 🔴 Red (Action Required): <60%
+---
 
 ## 🔧 Development
 
-### Run Backend in Development Mode
+### Regenerate Database
 ```bash
-cd backend
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+cd data
+python rebuild_database.py
 ```
 
-### Run Frontend in Development Mode
+This recreates the database with:
+- 3 companies
+- 5 manager accounts
+- 5 projects linked to companies
+- All original scenarios and workers
+
+### Add New Manager
+```python
+# In data/rebuild_database.py, add to managers list:
+('m6', 'c1', 'new.user', 'password123', 'New User', 'new@email.com', 'manager'),
+```
+
+Then run `python rebuild_database.py`
+
+### Backend Development
+```bash
+cd backend
+python -m uvicorn app.main:app --reload
+```
+
+### Frontend Development
 ```bash
 cd frontend
 npm run dev
 ```
 
-### Build Frontend for Production
-```bash
-cd frontend
-npm run build
-```
+---
 
-## 📦 Deployment (Future)
+## 📈 Data Model
 
-### DigitalOcean App Platform
+### Core Entities
+- **Companies** (3) → **Managers** (5 users)
+- **Companies** (3) → **Projects** (5)
+- **Projects** → **Scenarios** (8 total)
+- **Scenarios** → **Workers** (~100 sessions)
+- **Workers** → **Hazard Responses** (~1000 responses)
 
-1. Push code to GitHub repository
-2. Connect GitHub to DigitalOcean App Platform
-3. Configure build settings:
-   - Backend: Python app, runs `uvicorn app.main:app`
-   - Frontend: Static site, builds with `npm run build`
-   - Database: Postgres (replace SQLite in production)
+### Energy Types (10)
+Gravity, Motion, Pressure, Electrical, Mechanical, Sound, Biological, Chemical, Radiation, Temperature
 
-## 🐛 Known Issues / Future Enhancements
-
-- [ ] Scenario detail view (click on scenario to see full data)
-- [ ] Scenario comparison with charts
-- [ ] Full Comparison tab with radar charts
-- [ ] Worker trend charts over time
-- [ ] Export functionality (CSV, PDF)
-- [ ] User authentication
-- [ ] Real-time data updates
-- [ ] Switch from SQLite to PostgreSQL for production
-
-## 👥 Contributors
-
-Built with Claude Code (Anthropic) - March 2026
-
-## 📝 Notes
-
-This application was built from a prototype and uses mock data.
-The data structure and calculations match the original prototype exactly.
-Ready for real data integration when available.
+### Metrics (3 per energy type)
+1. **Identification Score** - % correctly identified
+2. **High Energy Accuracy** - % correctly marked as high energy
+3. **Direct Control Accuracy** - % correctly marked as direct control
 
 ---
 
-**Last Updated:** March 9, 2026
-**Status:** ✅ Fully functional MVP with mock data
+## 🧪 Testing
+
+### Test Accounts
+Use the 3 test accounts to verify company filtering:
+1. Login as `sarah.johnson` → See only Apex projects (p1, p2)
+2. Login as `emma.davis` → See only TechBuild projects (p3, p4)
+3. Login as `lisa.martinez` → See only SafeWorks project (p5)
+
+### Test Comparison Tab
+- All 3 users should see ALL 5 projects in Comparison tab
+- Verify industry benchmark toggle works
+
+### Test Logout
+- Click avatar in top-right → Logs out
+- Refresh page → Should redirect to login
+
+---
+
+## 🤝 Contributing
+
+This is a private project for Mahdi Zareian.
+
+---
+
+## 📝 License
+
+Proprietary - All rights reserved
+
+---
+
+## 📞 Support
+
+For issues or questions, contact: mahdi@example.com
+
+---
+
+**Last Updated:** 2026-03-11
+**Version:** 2.0.0 (with authentication)
