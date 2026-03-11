@@ -2,6 +2,34 @@
  * TypeScript types matching the backend API responses
  */
 
+// Authentication
+export interface LoginCredentials {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  manager_id: string;
+  username: string;
+  full_name: string;
+  email?: string;
+  company_id: string;
+  company_name: string;
+  role: string;
+  token: string;
+}
+
+export interface UserInfo {
+  manager_id: string;
+  username: string;
+  full_name: string;
+  email?: string;
+  company_id: string;
+  company_name: string;
+  role: string;
+}
+
 // Energy Types
 export interface EnergyType {
   id: string;

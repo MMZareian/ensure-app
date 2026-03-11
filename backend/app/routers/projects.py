@@ -15,14 +15,17 @@ router = APIRouter(prefix="/api/projects", tags=["projects"])
 
 
 @router.get("", response_model=List[Project])
-def get_projects():
+def get_projects(company_id: str = None):
     """
-    Get all projects.
+    Get all projects, optionally filtered by company.
+
+    Args:
+        company_id: Optional company ID to filter projects
 
     Returns:
-        List of all projects with basic info
+        List of projects (filtered by company if specified)
     """
-    projects_data = queries.get_all_projects()
+    projects_data = queries.get_all_projects(company_id)
     return projects_data
 
 

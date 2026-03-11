@@ -4,16 +4,26 @@
 
 import { useState, useEffect } from 'react';
 import { projectsAPI } from '../api/client';
-import type { ScenarioSummary } from '../types';
+import type { Project, ScenarioSummary } from '../types';
 import { Pill } from '../components/Pill';
 
 interface ScenariosTabProps {
   selectedProject: string;
+  onProjectChange: (projectId: string) => void;
+  companyId: string | null;
 }
 
-export function ScenariosTab({ selectedProject }: ScenariosTabProps) {
+export function ScenariosTab({ selectedProject, onProjectChange, companyId }: ScenariosTabProps) {
+  const [projects, setProjects] = useState<Project[]>([]);
   const [scenarios, setScenarios] = useState<ScenarioSummary[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Load projects filtered by company
+  useEffect(() => {
+    if (companyId) {
+      projectsAPI.getAll(companyId).then(setProjects).catch(console.error);
+    }
+  }, [companyId]);
 
   useEffect(() => {
     setLoading(true);

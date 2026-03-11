@@ -3,6 +3,9 @@
  */
 
 import type {
+  LoginCredentials,
+  LoginResponse,
+  UserInfo,
   Project,
   ProjectOverview,
   ScenarioSummary,
@@ -21,24 +24,57 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 /**
  * Generic fetch wrapper with error handling
  */
-async function fetchAPI<T>(endpoint: string): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`);
+async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
 
   if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    const error = await response.json().catch(() => ({ detail: response.statusText }));
+    throw new Error(error.detail || `API Error: ${response.status}`);
   }
 
   return response.json();
 }
 
 /**
+ * Authentication API
+ */
+export const authAPI = {
+  /**
+   * Login with username and password
+   */
+  login: (credentials: LoginCredentials) =>
+    fetchAPI<LoginResponse>('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    }),
+
+  /**
+   * Logout (clear session)
+   */
+  logout: () =>
+    fetchAPI<{ success: boolean; message: string }>('/api/auth/logout', {
+      method: 'POST',
+    }),
+
+  /**
+   * Get current user info
+   */
+  me: (token: string) =>
+    fetchAPI<UserInfo>(`/api/auth/me?token=${token}`),
+};
+
+/**
  * Projects API
  */
 export const projectsAPI = {
   /**
-   * Get all projects
+   * Get all projects, optionally filtered by company
    */
-  getAll: () => fetchAPI<Project[]>('/api/projects'),
+  getAll: (companyId?: string) => {
+    const url = companyId ? `/api/projects?company_id=${companyId}` : '/api/projects';
+    return fetchAPI<Project[]>(url);
+  },
 
   /**
    * Get project overview for Overview tab

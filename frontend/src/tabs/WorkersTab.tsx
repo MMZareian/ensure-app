@@ -205,9 +205,10 @@ function WorkerCard({ name, colorIndex, projectId, scenarioId }: WorkerCardProps
 
 interface WorkersTabProps {
   selectedProject: string;
+  companyId: string | null;
 }
 
-export function WorkersTab({ selectedProject }: WorkersTabProps) {
+export function WorkersTab({ selectedProject, companyId }: WorkersTabProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [wkProject, setWkProject] = useState(selectedProject);
   const [wkScenario, setWkScenario] = useState('all');
@@ -216,10 +217,12 @@ export function WorkersTab({ selectedProject }: WorkersTabProps) {
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load projects on mount
+  // Load projects filtered by company
   useEffect(() => {
-    projectsAPI.getAll().then(setProjects).catch(console.error);
-  }, []);
+    if (companyId) {
+      projectsAPI.getAll(companyId).then(setProjects).catch(console.error);
+    }
+  }, [companyId]);
 
   // Update wkProject when selectedProject changes
   useEffect(() => {

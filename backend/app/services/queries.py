@@ -23,20 +23,32 @@ def get_all_energy_types() -> List[Dict[str, Any]]:
     return db.execute_query(query)
 
 
-def get_all_projects() -> List[Dict[str, Any]]:
+def get_all_projects(company_id: str = None) -> List[Dict[str, Any]]:
     """
-    Get all projects.
+    Get all projects, optionally filtered by company.
+
+    Args:
+        company_id: Optional company ID to filter by
 
     Returns:
-        List of projects with id, name, region, company_name, industry
+        List of projects with id, name, region, company_name, industry, company_id
     """
     db = get_database()
-    query = """
-        SELECT id, name, region, company_name, industry
-        FROM projects
-        ORDER BY id
-    """
-    return db.execute_query(query)
+    if company_id:
+        query = """
+            SELECT id, name, region, company_name, industry, company_id
+            FROM projects
+            WHERE company_id = ?
+            ORDER BY id
+        """
+        return db.execute_query(query, (company_id,))
+    else:
+        query = """
+            SELECT id, name, region, company_name, industry, company_id
+            FROM projects
+            ORDER BY id
+        """
+        return db.execute_query(query)
 
 
 def get_project_by_id(project_id: str) -> Dict[str, Any] | None:

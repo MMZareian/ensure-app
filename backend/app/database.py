@@ -73,6 +73,30 @@ class Database:
         results = self.execute_query(query, params)
         return results[0] if results else None
 
+    def execute_query_one(self, query: str, params: tuple = ()) -> Dict[str, Any] | None:
+        """Alias for execute_one for compatibility"""
+        return self.execute_one(query, params)
+
+    def execute_update(self, query: str, params: tuple = ()) -> int:
+        """
+        Execute INSERT/UPDATE/DELETE query.
+
+        Args:
+            query: SQL query string
+            params: Query parameters (optional)
+
+        Returns:
+            Number of rows affected
+        """
+        conn = self._get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(query, params)
+            conn.commit()
+            return cursor.rowcount
+        finally:
+            conn.close()
+
 
 # Database instance (singleton pattern)
 # This will be initialized when the FastAPI app starts

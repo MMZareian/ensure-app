@@ -10,19 +10,28 @@ import { EnergyWheel } from '../components/EnergyWheel';
 
 interface OverviewTabProps {
   selectedProject: string;
-  onSelectProject: (projectId: string) => void;
+  onProjectChange: (projectId: string) => void;
+  companyId: string | null;
 }
 
-export function OverviewTab({ selectedProject, onSelectProject }: OverviewTabProps) {
+export function OverviewTab({ selectedProject, onProjectChange, companyId }: OverviewTabProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [overview, setOverview] = useState<ProjectOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [wheelMode, setWheelMode] = useState<'ident' | 'high' | 'control'>('ident');
 
-  // Load all projects on mount
+  // Load projects filtered by company
   useEffect(() => {
-    projectsAPI.getAll().then(setProjects).catch(console.error);
-  }, []);
+    if (companyId) {
+      projectsAPI.getAll(companyId).then((projs) => {
+        setProjects(projs);
+        // Auto-select first project if current selection is not in list
+        if (projs.length > 0 && !projs.find((p) => p.id === selectedProject)) {
+          onProjectChange(projs[0].id);
+        }
+      }).catch(console.error);
+    }
+  }, [companyId]);
 
   // Load overview when project changes
   useEffect(() => {
@@ -86,7 +95,7 @@ export function OverviewTab({ selectedProject, onSelectProject }: OverviewTabPro
             Energy Wheel Safety Training
           </p>
         </div>
-        <select className="ov-select" value={selectedProject} onChange={(e) => onSelectProject(e.target.value)}>
+        <select className="ov-select" value={selectedProject} onChange={(e) => onProjectChange(e.target.value)}>
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name} — {p.region}

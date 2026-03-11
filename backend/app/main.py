@@ -5,7 +5,7 @@ FastAPI application serving safety training analytics data.
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import projects, scenarios, comparison, workers
+from app.routers import projects, scenarios, comparison, workers, auth
 
 # Create FastAPI app
 app = FastAPI(
@@ -26,6 +26,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth.router)  # Authentication endpoints
 app.include_router(projects.router)
 app.include_router(scenarios.router)
 app.include_router(comparison.router)
