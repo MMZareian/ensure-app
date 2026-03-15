@@ -3,7 +3,7 @@ Database query functions.
 
 This module contains all SQL queries needed by the API endpoints.
 """
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from app.database import get_database
 
 
@@ -51,7 +51,7 @@ def get_all_projects(company_id: str = None) -> List[Dict[str, Any]]:
         return db.execute_query(query)
 
 
-def get_project_by_id(project_id: str) -> Dict[str, Any] | None:
+def get_project_by_id(project_id: str) -> Optional[Dict[str, Any]]:
     """
     Get a single project by ID.
 
@@ -126,7 +126,7 @@ def get_scenarios_by_project(project_id: str) -> List[Dict[str, Any]]:
     return db.execute_query(query, (project_id,))
 
 
-def get_scenario_by_id(scenario_id: str) -> Dict[str, Any] | None:
+def get_scenario_by_id(scenario_id: str) -> Optional[Dict[str, Any]]:
     """
     Get a single scenario by ID.
 

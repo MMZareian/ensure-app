@@ -35,42 +35,28 @@ const WK_METRIC_COLORS = {
 };
 
 interface WorkerCardProps {
-  name: string;
-  colorIndex: number;
-  projectId: string;
-  scenarioId: string;
+  workerTrend: WorkerTrend;
 }
 
-function WorkerCard({ name, colorIndex, projectId, scenarioId }: WorkerCardProps) {
+function WorkerCard({ workerTrend }: WorkerCardProps) {
   const [open, setOpen] = useState(false);
-  const [trends, setTrends] = useState<WorkerTrend[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { name, colorIndex, points } = workerTrend;
   const color = WK_COLORS[colorIndex % WK_COLORS.length];
-
-  useEffect(() => {
-    if (!open) return;
-    setLoading(true);
-    workersAPI
-      .getTrends(projectId, name)
-      .then(setTrends)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [open, projectId, name]);
 
   const initials = name
     .split(' ')
     .map((p) => p[0])
     .join('');
 
-  if (!trends.length && !open) return null;
+  if (!points.length) return null;
 
   // Calculate trend from first to latest scenario
-  const firstScore = trends[0]?.identScore ?? 0;
-  const lastScore = trends[trends.length - 1]?.identScore ?? 0;
+  const firstScore = points[0]?.ident ?? 0;
+  const lastScore = points[points.length - 1]?.ident ?? 0;
   const trendDelta = lastScore - firstScore;
 
   const trendEl =
-    trends.length < 2 ? null : trendDelta > 3 ? (
+    points.length < 2 ? null : trendDelta > 3 ? (
       <span style={{ color: '#16a34a', fontSize: 10, fontWeight: 600 }}>▲ +{trendDelta}%</span>
     ) : trendDelta < -3 ? (
       <span style={{ color: '#dc2626', fontSize: 10, fontWeight: 600 }}>▼ {trendDelta}%</span>
@@ -83,14 +69,11 @@ function WorkerCard({ name, colorIndex, projectId, scenarioId }: WorkerCardProps
 
   // Chart data
   const chartData: ChartData<'line'> = {
-    labels: trends.map((t) => {
-      const name = t.scenarioName;
-      return name.length > 22 ? name.slice(0, 21) + '…' : name;
-    }),
+    labels: points.map((t) => t.scenarioName),
     datasets: [
       {
         label: '🎯 Identification',
-        data: trends.map((t) => t.identScore),
+        data: points.map((t) => t.ident),
         borderColor: WK_METRIC_COLORS.ident,
         backgroundColor: WK_METRIC_COLORS.ident + '18',
         borderWidth: 2,
@@ -101,7 +84,7 @@ function WorkerCard({ name, colorIndex, projectId, scenarioId }: WorkerCardProps
       },
       {
         label: '⚡ High Energy',
-        data: trends.map((t) => t.highScore),
+        data: points.map((t) => t.high),
         borderColor: WK_METRIC_COLORS.high,
         backgroundColor: WK_METRIC_COLORS.high + '18',
         borderWidth: 2,
@@ -112,7 +95,7 @@ function WorkerCard({ name, colorIndex, projectId, scenarioId }: WorkerCardProps
       },
       {
         label: '🛡 Direct Control',
-        data: trends.map((t) => t.controlScore),
+        data: points.map((t) => t.control),
         borderColor: WK_METRIC_COLORS.control,
         backgroundColor: WK_METRIC_COLORS.control + '18',
         borderWidth: 2,
@@ -124,7 +107,7 @@ function WorkerCard({ name, colorIndex, projectId, scenarioId }: WorkerCardProps
     ],
   };
 
-  const latestTrend = trends[trends.length - 1];
+  const latestPoint = points[points.length - 1];
 
   return (
     <div className={`wk-card${open ? ' open' : ''}`}>
@@ -136,67 +119,60 @@ function WorkerCard({ name, colorIndex, projectId, scenarioId }: WorkerCardProps
           <div>
             <div className="wk-name">{name}</div>
             <div className="wk-meta">
-              {trends.length} scenario{trends.length !== 1 ? 's' : ''} · Latest:{' '}
-              <Pill value={latestTrend?.identScore ?? 0} /> {trendEl}
+              {points.length} scenario{points.length !== 1 ? 's' : ''} · Latest:{' '}
+              <Pill value={latestPoint?.ident ?? 0} /> {trendEl}
             </div>
           </div>
         </div>
         <div className="wk-card-pills">
-          <span style={{ fontSize: 10, color: '#94a3b8' }}>⚡ {latestTrend?.highScore ?? 0}%</span>
+          <span style={{ fontSize: 10, color: '#94a3b8' }}>⚡ {latestPoint?.high ?? 0}%</span>
           <span style={{ fontSize: 10, color: '#94a3b8', marginLeft: 6 }}>
-            🛡 {latestTrend?.controlScore ?? 0}%
+            🛡 {latestPoint?.control ?? 0}%
           </span>
           <span className="wk-card-chevron">▼</span>
         </div>
       </div>
       {open && (
         <div className="wk-card-body">
-          {loading ? (
-            <div className="loading" style={{ padding: 20 }}>
-              <div className="loading-spinner"></div>
-              <p>Loading trends...</p>
-            </div>
-          ) : (
-            <div className="wk-chart-wrap">
-              <Line
-                data={chartData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  interaction: { mode: 'index', intersect: false },
-                  plugins: {
-                    legend: {
-                      display: true,
-                      position: 'bottom',
-                      labels: { font: { size: 10 }, boxWidth: 10, padding: 14 },
-                    },
-                    tooltip: {
-                      callbacks: {
-                        label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}%`,
-                      },
+          <div className="wk-chart-wrap">
+            <Line
+              data={chartData}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                  legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: { font: { size: 10 }, boxWidth: 10, padding: 14 },
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}%`,
                     },
                   },
-                  scales: {
-                    x: {
-                      grid: { display: false },
-                      ticks: { font: { size: 9 }, color: '#94a3b8', maxRotation: 20 },
-                    },
-                    y: {
-                      min: 0,
-                      max: 100,
-                      grid: { color: '#f1f5f9' },
-                      ticks: {
-                        font: { size: 9 },
-                        color: '#94a3b8',
-                        callback: (v) => v + '%',
-                      },
+                },
+                scales: {
+                  x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 9 }, color: '#94a3b8', maxRotation: 20 },
+                  },
+                  y: {
+                    min: 0,
+                    max: 100,
+                    grid: { color: '#f1f5f9' },
+                    ticks: {
+                      font: { size: 9 },
+                      color: '#94a3b8',
+                      callback: (v) => v + '%',
                     },
                   },
-                }}
-                height={180}
-              />
-            </div>
-          )}
+                },
+              }}
+              height={180}
+            />
+          </div>
         </div>
       )}
     </div>
@@ -213,7 +189,7 @@ export function WorkersTab({ selectedProject, companyId }: WorkersTabProps) {
   const [wkProject, setWkProject] = useState(selectedProject);
   const [wkScenario, setWkScenario] = useState('all');
   const [workers, setWorkers] = useState<WorkerSummary[]>([]);
-  const [allWorkerNames, setAllWorkerNames] = useState<string[]>([]);
+  const [workerTrends, setWorkerTrends] = useState<WorkerTrend[]>([]);
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -230,21 +206,16 @@ export function WorkersTab({ selectedProject, companyId }: WorkersTabProps) {
     setWkScenario('all');
   }, [selectedProject]);
 
-  // Load scenarios for selected project
+  // Load scenarios and trends for selected project
   useEffect(() => {
     setLoading(true);
-    projectsAPI
-      .getScenarios(wkProject)
-      .then((data) => {
-        setScenarios(data);
-        // Extract all unique worker names from scenarios
-        const names = new Set<string>();
-        data.forEach((sc: any) => {
-          sc.workers?.forEach((w: any) => {
-            names.add(w.name);
-          });
-        });
-        setAllWorkerNames(Array.from(names).sort());
+    Promise.all([
+      projectsAPI.getScenarios(wkProject),
+      workersAPI.getTrends(wkProject)
+    ])
+      .then(([scenariosData, trendsData]) => {
+        setScenarios(scenariosData);
+        setWorkerTrends(trendsData);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -439,8 +410,8 @@ export function WorkersTab({ selectedProject, companyId }: WorkersTabProps) {
           </div>
         </div>
         {showTrends ? (
-          allWorkerNames.map((name, i) => (
-            <WorkerCard key={name} name={name} colorIndex={i} projectId={wkProject} scenarioId={wkScenario} />
+          workerTrends.map((trend) => (
+            <WorkerCard key={trend.name} workerTrend={trend} />
           ))
         ) : (
           <div className="empty-state" style={{ padding: 32 }}>

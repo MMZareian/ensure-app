@@ -34,3 +34,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Database backups (don't commit these)
+data/ensure_mock_backup_*.sqlite

@@ -3,7 +3,7 @@ Database connection and utilities
 """
 import sqlite3
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 
 class Database:
@@ -59,7 +59,7 @@ class Database:
         finally:
             conn.close()
 
-    def execute_one(self, query: str, params: tuple = ()) -> Dict[str, Any] | None:
+    def execute_one(self, query: str, params: tuple = ()) -> Optional[Dict[str, Any]]:
         """
         Execute a query and return only the first result.
 
@@ -73,7 +73,7 @@ class Database:
         results = self.execute_query(query, params)
         return results[0] if results else None
 
-    def execute_query_one(self, query: str, params: tuple = ()) -> Dict[str, Any] | None:
+    def execute_query_one(self, query: str, params: tuple = ()) -> Optional[Dict[str, Any]]:
         """Alias for execute_one for compatibility"""
         return self.execute_one(query, params)
 
