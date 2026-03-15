@@ -16,10 +16,13 @@ services:
     instance_size_slug: basic-xxs
     routes:
       - path: /api
+    envs:
+      - key: PORT
+        value: "8080"
 
+static_sites:
   # Frontend Static Site
   - name: frontend
-    environment_slug: node-js
     github:
       branch: main
       deploy_on_push: true
@@ -29,3 +32,6 @@ services:
     output_dir: dist
     routes:
       - path: /
+    envs:
+      - key: VITE_API_URL
+        value: ${APP_URL}
