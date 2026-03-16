@@ -21,16 +21,6 @@ import { Pill } from '../components/Pill';
 // Register Chart.js components
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
-// Color scheme for projects
-const CMP_COLORS = [
-  { border: '#0ea5e9', bg: 'rgba(14,165,233,0.10)' },
-  { border: '#f59e0b', bg: 'rgba(245,158,11,0.10)' },
-  { border: '#8b5cf6', bg: 'rgba(139,92,246,0.10)' },
-  { border: '#10b981', bg: 'rgba(16,185,129,0.10)' },
-  { border: '#ef4444', bg: 'rgba(239,68,68,0.10)' },
-  { border: '#ec4899', bg: 'rgba(236,72,153,0.10)' },
-  { border: '#64748b', bg: 'rgba(100,116,139,0.10)' },
-];
 
 export function ComparisonTab() {
   const [projects, setProjects] = useState<Project[]>([]);

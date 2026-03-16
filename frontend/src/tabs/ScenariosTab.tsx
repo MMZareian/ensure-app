@@ -19,7 +19,7 @@ interface ScenariosTabProps {
 
 type ViewMode = 'browse' | 'compare';
 
-export function ScenariosTab({ selectedProject, onProjectChange, companyId }: ScenariosTabProps) {
+export function ScenariosTab({ selectedProject, onProjectChange: _onProjectChange, companyId }: ScenariosTabProps) {
   const [mode, setMode] = useState<ViewMode>('browse');
   const [projects, setProjects] = useState<Project[]>([]);
   const [scenarios, setScenarios] = useState<ScenarioSummary[]>([]);
@@ -329,7 +329,7 @@ interface ScenarioCompareModeProps {
   companyId: string | null;
 }
 
-function ScenarioCompareMode({ projects, companyId }: ScenarioCompareModeProps) {
+function ScenarioCompareMode({ projects, companyId: _companyId }: ScenarioCompareModeProps) {
   const [projectA, setProjectA] = useState('');
   const [projectB, setProjectB] = useState('');
   const [scenariosA, setScenariosA] = useState<ScenarioSummary[]>([]);

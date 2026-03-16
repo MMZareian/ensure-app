@@ -2,7 +2,7 @@
  * Workers Tab - Worker performance summary and trends with expandable cards
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,

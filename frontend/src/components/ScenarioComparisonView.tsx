@@ -152,7 +152,10 @@ function HazardIdentComparisonChart({ bdA, bdB }: HazardIdentComparisonChartProp
           },
           tooltip: {
             callbacks: {
-              label: (context) => `${context.dataset.label}: ${context.parsed.y}%`,
+              label: (context) => {
+                const y = (context.parsed as { y: number } | null)?.y ?? 0;
+                return `${context.dataset.label}: ${y}%`;
+              },
             },
           },
         },
@@ -258,7 +261,10 @@ function ClassificationComparisonChart({ bdA, bdB }: ClassificationComparisonCha
           },
           tooltip: {
             callbacks: {
-              label: (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(1)}%`,
+              label: (context) => {
+                const y = (context.parsed as { y: number } | null)?.y ?? 0;
+                return `${context.dataset.label}: ${y.toFixed(1)}%`;
+              },
             },
           },
         },
