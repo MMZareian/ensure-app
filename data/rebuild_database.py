@@ -142,6 +142,147 @@ for project_id, company_id in project_company_mapping.items():
 
 print(f"[OK] Linked {len(project_company_mapping)} projects to companies")
 
+print("\nGenerating unique worker IDs for existing projects (p1-p5)...")
+
+# Create pool of unique worker IDs (100 total unique workers for construction/industrial projects)
+# Format: WRK_XXXXXX (6-digit random number)
+worker_id_pool = []
+worker_skills = {}  # Track skill level for each worker
+used_worker_ids = set()
+
+for i in range(100):
+    while True:
+        worker_id = f"WRK_{random.randint(100000, 999999)}"
+        if worker_id not in used_worker_ids:
+            used_worker_ids.add(worker_id)
+            worker_id_pool.append(worker_id)
+            # Assign consistent skill level for this worker (0.5 to 0.95)
+            worker_skills[worker_id] = 0.5 + (random.random() * 0.45)
+            break
+
+# Get all scenarios for projects p1-p5
+cursor.execute("""
+SELECT scenario_id, project_id FROM scenarios
+WHERE project_id IN ('p1', 'p2', 'p3', 'p4', 'p5')
+ORDER BY project_id, scenario_id
+""")
+existing_scenarios = cursor.fetchall()
+
+# Delete old workers and hazard responses for p1-p5 (we'll regenerate with unique IDs)
+cursor.execute("DELETE FROM workers WHERE project_id IN ('p1', 'p2', 'p3', 'p4', 'p5')")
+cursor.execute("DELETE FROM hazard_responses WHERE project_id IN ('p1', 'p2', 'p3', 'p4', 'p5')")
+print(f"[OK] Cleared old worker data for projects p1-p5")
+
+# Track which workers have been used (for cross-scenario tracking)
+used_workers_by_project = {}  # project_id -> list of worker_ids
+
+# Generate workers for each scenario
+total_worker_assignments = 0
+for scenario_id, project_id in existing_scenarios:
+    # Determine worker count for this scenario (10-20 workers per scenario)
+    worker_count = random.randint(10, 20)
+
+    # Initialize project tracking if needed
+    if project_id not in used_workers_by_project:
+        used_workers_by_project[project_id] = []
+
+    selected_workers = []
+
+    # Reuse 30-50% of workers from previous scenarios in same project
+    if len(used_workers_by_project[project_id]) > 0:
+        reuse_count = random.randint(int(worker_count * 0.3), int(worker_count * 0.5))
+        reuse_count = min(reuse_count, len(used_workers_by_project[project_id]))
+        selected_workers.extend(random.sample(used_workers_by_project[project_id], reuse_count))
+
+    # Fill remaining slots with new workers from pool
+    remaining_count = worker_count - len(selected_workers)
+    available_workers = [wid for wid in worker_id_pool if wid not in selected_workers]
+    selected_workers.extend(random.sample(available_workers, min(remaining_count, len(available_workers))))
+
+    # Track these workers for the project
+    for worker_id in selected_workers:
+        if worker_id not in used_workers_by_project[project_id]:
+            used_workers_by_project[project_id].append(worker_id)
+
+    # Shuffle to randomize order
+    random.shuffle(selected_workers)
+
+    # Generate workers and hazard responses
+    for worker_id in selected_workers:
+        total_worker_assignments += 1
+
+        # Insert worker
+        cursor.execute("""
+        INSERT OR REPLACE INTO workers (worker_id, project_id, worker_name, role, experience_band)
+        VALUES (?, ?, ?, ?, ?)
+        """, (worker_id, project_id, worker_id, 'Worker', random.choice(['Beginner', 'Intermediate', 'Advanced'])))
+
+        # Get all energy types
+        cursor.execute("SELECT id FROM energy_types ORDER BY id")
+        energy_type_ids = [row[0] for row in cursor.fetchall()]
+
+        # Use consistent skill level for this worker
+        worker_skill = worker_skills[worker_id]
+
+        # Check if worker has worked on other scenarios (skill improvement)
+        cursor.execute("""
+        SELECT COUNT(DISTINCT scenario_id) FROM hazard_responses
+        WHERE worker_id = ? AND project_id = ?
+        """, (worker_id, project_id))
+
+        previous_scenarios = cursor.fetchone()[0]
+        skill_improvement = min(previous_scenarios * 0.03, 0.12)  # Max 12% improvement
+        adjusted_skill = min(worker_skill + skill_improvement, 0.98)
+
+        # Generate hazard responses
+        for energy_id in energy_type_ids:
+            # Randomize responses based on worker skill level
+            identified = random.random() < (0.5 + adjusted_skill * 0.5)  # 50-98% identification
+
+            if identified:
+                # If identified, check high energy classification
+                marked_high = random.random() < (0.5 + adjusted_skill * 0.5)
+                correct_high = random.random() < (0.5 + adjusted_skill * 0.5)
+
+                # Check direct control classification
+                marked_control = random.random() < (0.5 + adjusted_skill * 0.5)
+                correct_control = random.random() < (0.5 + adjusted_skill * 0.5)
+            else:
+                # Not identified - no classifications
+                marked_high = False
+                correct_high = False
+                marked_control = False
+                correct_control = False
+
+            cursor.execute("""
+            INSERT OR REPLACE INTO hazard_responses
+            (scenario_id, project_id, worker_id, worker_name, energy_id, identified_correctly,
+             marked_high_energy, correct_high_energy, marked_direct_control, correct_direct_control)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                scenario_id,
+                project_id,
+                worker_id,
+                worker_id,  # Use worker_id as display name
+                energy_id,
+                1 if identified else 0,
+                1 if marked_high else 0,
+                1 if correct_high else 0,
+                1 if marked_control else 0,
+                1 if correct_control else 0
+            ))
+
+# Count unique workers
+cursor.execute("""
+SELECT COUNT(DISTINCT worker_id) FROM workers
+WHERE project_id IN ('p1', 'p2', 'p3', 'p4', 'p5') AND worker_id LIKE 'WRK_%'
+""")
+unique_workers = cursor.fetchone()[0]
+
+print(f"[OK] Regenerated {len(existing_scenarios)} scenarios with unique worker IDs")
+print(f"[OK] Generated {total_worker_assignments} total worker assignments ({unique_workers} unique workers)")
+print(f"[OK] Workers appear in multiple scenarios to demonstrate progress tracking")
+
 print("\nCreating University of Calgary project and scenarios...")
 
 # Add Project 6 - University Safety Training
