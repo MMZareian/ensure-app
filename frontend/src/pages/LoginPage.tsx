@@ -45,9 +45,9 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
         {/* Logo and Title */}
         <div className="login-header">
           <div className="login-logo">
-            <div className="logo-icon">🛡️</div>
+            <img src="/Web_Logo.png" alt="Bridge Logo" className="logo-image" />
             <div>
-              <h1 className="login-title">Ensure</h1>
+              <h1 className="login-title">Bridge</h1>
               <p className="login-subtitle">Safety Analytics Platform</p>
             </div>
           </div>

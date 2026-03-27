@@ -58,18 +58,21 @@ export function ComparisonTab() {
       .finally(() => setLoading(false));
   }, [cmpProjects, radarMode]);
 
-  // Load table data when table projects change
+  // Load table data when table projects change OR when radar projects change (for comparison messages)
   useEffect(() => {
-    if (cmpTableProjects.length === 0) return;
+    // Use radar projects (cmpProjects) if industry is included, otherwise use table projects
+    const projectsToLoad = cmpProjects.includes('industry') ? cmpProjects : cmpTableProjects;
 
-    const includeIndustry = cmpTableProjects.includes('industry');
-    const projectIds = cmpTableProjects.filter((id) => id !== 'industry');
+    if (projectsToLoad.length === 0) return;
+
+    const includeIndustry = projectsToLoad.includes('industry');
+    const projectIds = projectsToLoad.filter((id) => id !== 'industry');
 
     comparisonAPI
       .getTableData(projectIds, includeIndustry)
       .then(setTableData)
       .catch(console.error);
-  }, [cmpTableProjects]);
+  }, [cmpTableProjects, cmpProjects]);
 
   function toggleCmpProject(pid: string) {
     setCmpProjects((prev) => {
@@ -99,11 +102,32 @@ export function ComparisonTab() {
   };
 
   const showRag = cmpProjects.includes('industry') && cmpProjects.length > 1;
-  const firstPid = cmpProjects.find((id) => id !== 'industry');
-  const firstProj = projects.find((p) => p.id === firstPid);
 
-  // For RAG calculation, we'd need project averages - simplified for now
-  const ragDelta = 5; // Placeholder
+  // Calculate industry average and project averages
+  const industryData = tableData.find(tp => tp.name === 'Industry Avg');
+  const projectComparisons: Array<{project: Project, delta: number}> = [];
+
+  if (industryData) {
+    // Calculate industry average across all energy types
+    const industryAvg = industryData.energyBreakdown.reduce((sum, e) => {
+      return sum + (e.identScore + e.highScore + e.controlScore) / 3;
+    }, 0) / industryData.energyBreakdown.length;
+
+    // Calculate average for each selected project
+    cmpProjects.filter(id => id !== 'industry').forEach(pid => {
+      const projData = tableData.find(tp => tp.name === projects.find(p => p.id === pid)?.name);
+      const proj = projects.find(p => p.id === pid);
+
+      if (projData && proj) {
+        const projAvg = projData.energyBreakdown.reduce((sum, e) => {
+          return sum + (e.identScore + e.highScore + e.controlScore) / 3;
+        }, 0) / projData.energyBreakdown.length;
+
+        const delta = projAvg - industryAvg;
+        projectComparisons.push({project: proj, delta});
+      }
+    });
+  }
 
   return (
     <div>
@@ -137,15 +161,42 @@ export function ComparisonTab() {
       </div>
 
       {/* RAG Banner */}
-      {showRag && (
-        <div className={`rag-banner ${ragDelta >= 5 ? 'green' : ragDelta >= -5 ? 'amber' : 'red'}`} style={{ marginBottom: 18 }}>
-          <div className="rag-dot" />
-          <strong>{ragDelta >= 5 ? 'Leading' : ragDelta >= -5 ? 'On Par' : 'Trailing'}:</strong>&nbsp;
-          {ragDelta >= 5
-            ? `${firstProj?.name} scores ${ragDelta}% above Industry Average.`
-            : ragDelta >= -5
-            ? `${firstProj?.name} is within 5% of Industry Average.`
-            : `${firstProj?.name} scores ${Math.abs(ragDelta)}% below Industry Average.`}
+      {showRag && projectComparisons.length > 0 && (
+        <div className="card" style={{ marginBottom: 18, padding: '16px 20px' }}>
+          <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: 10 }}>
+            Industry Average Comparison:
+          </div>
+          {projectComparisons.map(({project, delta}) => {
+            const status = delta >= 5 ? 'Leading' : delta >= -5 ? 'On Par' : 'Trailing';
+            const color = delta >= 5 ? '#10b981' : delta >= -5 ? '#f59e0b' : '#ef4444';
+
+            return (
+              <div key={project.id} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '8px 12px',
+                marginBottom: 6,
+                backgroundColor: '#f8fafc',
+                borderRadius: 6,
+                borderLeft: `4px solid ${color}`
+              }}>
+                <div style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  backgroundColor: color,
+                  flexShrink: 0
+                }} />
+                <div style={{ fontSize: 12, color: '#475569' }}>
+                  <strong style={{ color: '#0f172a' }}>{project.name}</strong> scores{' '}
+                  <strong style={{ color }}>{Math.abs(delta).toFixed(2)}%</strong>{' '}
+                  {delta >= 0 ? 'above' : 'below'} Industry Average{' '}
+                  <span style={{ color: '#94a3b8' }}>({status})</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 

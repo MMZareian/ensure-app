@@ -20,17 +20,19 @@ export function OverviewTab({ selectedProject, onProjectChange, companyId }: Ove
   const [loading, setLoading] = useState(true);
   const [wheelMode, setWheelMode] = useState<'ident' | 'high' | 'control'>('ident');
 
-  // Load projects filtered by company
+  // Load projects filtered by company (or all if super admin)
   useEffect(() => {
-    if (companyId) {
-      projectsAPI.getAll(companyId).then((projs) => {
-        setProjects(projs);
-        // Auto-select first project if current selection is not in list
-        if (projs.length > 0 && !projs.find((p) => p.id === selectedProject)) {
-          onProjectChange(projs[0].id);
-        }
-      }).catch(console.error);
-    }
+    // For super_admin (companyId = null), load all projects
+    // For regular managers, load only company projects
+    const apiCall = companyId ? projectsAPI.getAll(companyId) : projectsAPI.getAll();
+
+    apiCall.then((projs) => {
+      setProjects(projs);
+      // Auto-select first project if current selection is not in list
+      if (projs.length > 0 && !projs.find((p) => p.id === selectedProject)) {
+        onProjectChange(projs[0].id);
+      }
+    }).catch(console.error);
   }, [companyId]);
 
   // Load overview when project changes

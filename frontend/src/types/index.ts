@@ -14,10 +14,13 @@ export interface LoginResponse {
   username: string;
   full_name: string;
   email?: string;
-  company_id: string;
+  company_id: string | null;
   company_name: string;
   role: string;
+  title?: string;
   token: string;
+  app_access: string;
+  subscription_tier: string;
 }
 
 export interface UserInfo {
@@ -25,9 +28,12 @@ export interface UserInfo {
   username: string;
   full_name: string;
   email?: string;
-  company_id: string;
+  company_id: string | null;
   company_name: string;
   role: string;
+  title?: string;
+  app_access: string;
+  subscription_tier: string;
 }
 
 // Energy Types

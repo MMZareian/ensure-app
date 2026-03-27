@@ -13,5 +13,8 @@ export function Pill({ value }: PillProps) {
     return 'pill-red';
   };
 
-  return <span className={`pill ${getClass(value)}`}>{value}%</span>;
+  // Format to 2 decimal places
+  const formattedValue = value.toFixed(2);
+
+  return <span className={`pill ${getClass(value)}`}>{formattedValue}%</span>;
 }

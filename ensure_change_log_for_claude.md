@@ -1,6 +1,48 @@
-# Ensure app — detailed change log and rationale (today's session)
+# Bridge Safety Analytics Platform — Change Log
 
-This file is a structured record of the code, build, and deployment changes we worked through today for the `ensure-app` project. It is meant to help me or another AI assistant (for example Claude in PyCharm) continue the work later without re-explaining the full history.
+This file is a structured record of the code, build, and deployment changes for the Bridge Safety Analytics Platform (formerly "Ensure"). It helps AI assistants understand the project history and continue work without re-explaining context.
+
+---
+
+## Recent Updates (2026-03-26)
+
+### Application Rebranding: "Ensure" → "Bridge"
+- Changed application name throughout the platform
+- Updated LoginPage, Topbar, and ApplicationHub components
+- Increased logo sizes for better visibility
+- Updated all documentation files
+
+### Application Hub Updates
+- **App 1**: Renamed to "Bridge" (was "Ensure")
+- **App 2**: Renamed to "Overhead Crane Simulator" with special styling
+  - Uses Crane_Logo.png
+  - Orange gradient text effect
+  - "Under Development" modal functionality maintained
+
+### Industry Average Calculation Improvements
+- **Fixed High Energy and Direct Control score calculations**
+  - Previous issue: Non-identified hazards were counted as 0, artificially lowering averages
+  - Solution: Removed `ELSE 0` clauses from CASE statements in `queries.py`
+  - Now correctly calculates scores only among identified hazards
+- **Two-stage averaging**: Calculate scenario averages, then average those (equal weighting per scenario)
+- **Percentage formatting**: Fixed to display exactly 2 decimal places using `.toFixed(2)`
+- **Dynamic comparison messages**: Shows each selected project's performance vs industry average
+
+### Files Modified in Recent Updates
+- `frontend/src/pages/LoginPage.tsx` - Rebranded to "Bridge"
+- `frontend/src/components/Topbar.tsx` - Rebranded to "Bridge"
+- `frontend/src/pages/ApplicationHub.tsx` - Updated App 2 to "Overhead Crane Simulator"
+- `frontend/src/styles.css` - Increased logo sizes, added crane title styling
+- `frontend/src/components/Pill.tsx` - Fixed percentage formatting
+- `frontend/src/tabs/ComparisonTab.tsx` - Added industry comparison messages
+- `backend/app/services/queries.py` - Fixed industry benchmark calculation
+- Documentation files updated (README.md, RUN_LOCAL.md, AUTHENTICATION_UPDATE.md, backend/README.md)
+
+---
+
+## Historical Context
+
+# Original deployment session detailed change log
 
 ---
 

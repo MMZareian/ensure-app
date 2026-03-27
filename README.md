@@ -1,10 +1,10 @@
-# Ensure Safety Analytics Platform
+# Bridge Safety Analytics Platform
 
 A professional full-stack web application for safety training analytics with **multi-company authentication** and comprehensive data visualization.
 
 ## 🎯 Overview
 
-**Ensure** helps safety managers track and analyze worker training performance across multiple projects and scenarios. Features include:
+**Bridge** helps safety managers track and analyze worker training performance across multiple projects and scenarios. Features include:
 
 - 🔐 **Multi-Company Authentication** - Secure login for managers
 - 📊 **Project Dashboards** - KPIs, energy wheels, and performance metrics
@@ -33,11 +33,9 @@ A professional full-stack web application for safety training analytics with **m
 - Node.js 24.14.0 LTS
 - Git
 
-### 1. Clone Repository
+### 1. Navigate to Repository
 ```bash
-cd C:\Users\mahdi\PycharmProjects\DigitalOcean
-git clone https://github.com/MMZareian/ensure-app.git
-cd ensure-app
+cd C:\Users\mahdi\PycharmProjects\DigitalOcean\ensure-app
 ```
 
 ### 2. Start Backend
@@ -117,9 +115,13 @@ ensure-app/
 │
 ├── data/
 │   ├── ensure_mock.sqlite       # Database (with auth data)
-│   └── rebuild_database.py      # Database regeneration script ✨ NEW
+│   └── rebuild_database.py      # Database regeneration script
 │
-└── Documentation/               # See below
+└── public/                      # Static assets (logos)
+    ├── Web_Logo.png
+    ├── SafeWheel_Logo.png
+    ├── Crane_Logo.png           # Overhead Crane Simulator
+    └── InDevelopment_Logo.png
 ```
 
 ---
@@ -223,14 +225,9 @@ projects
 |------|---------|--------|
 | `README.md` | Main project documentation | ✅ **YOU ARE HERE** |
 | `AUTHENTICATION_UPDATE.md` | Authentication implementation details | ✅ Current |
-| `PROGRESS.md` | Implementation progress tracker | ✅ Current |
+| `RUN_LOCAL.md` | Local development guide | ✅ Current |
 | `DEPLOY.md` | DigitalOcean deployment guide | ✅ Current |
-| ~~`DOCUMENTATION.md`~~ | Old detailed docs | ⚠️ **OUTDATED - DELETE** |
-| ~~`USER_GUIDE.md`~~ | Old user guide | ⚠️ **OUTDATED - DELETE** |
-| ~~`QUICK_REFERENCE.md`~~ | Old quick ref | ⚠️ **OUTDATED - DELETE** |
-| ~~`PROJECT_SUMMARY.md`~~ | Old summary | ⚠️ **OUTDATED - DELETE** |
-| ~~`START_HERE.md`~~ | Old navigation | ⚠️ **OUTDATED - DELETE** |
-| ~~`SYSTEM_DIAGRAM.txt`~~ | Old diagrams | ⚠️ **OUTDATED - DELETE** |
+| `ensure_change_log_for_claude.md` | Detailed deployment change log | ✅ Current |
 
 ---
 
@@ -340,5 +337,5 @@ For issues or questions, contact: mahdi@example.com
 
 ---
 
-**Last Updated:** 2026-03-11
-**Version:** 2.0.0 (with authentication)
+**Last Updated:** 2026-03-26
+**Version:** 2.1.0 (Bridge rebranding + enhanced analytics)

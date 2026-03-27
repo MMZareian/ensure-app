@@ -207,19 +207,38 @@ def get_workers_by_project(project_id: str) -> List[Dict[str, Any]]:
 
 def get_industry_benchmark() -> List[Dict[str, Any]]:
     """
-    Get industry benchmark data.
+    Get industry benchmark data calculated as average of scenario averages.
+
+    This ensures each scenario has equal weight regardless of number of workers.
+    Calculation: For each energy type, calculate average per scenario,
+                 then average those scenario averages.
 
     Returns:
         List of energy types with benchmark scores
     """
     db = get_database()
     query = """
+        WITH scenario_averages AS (
+            SELECT
+                hr.energy_id,
+                hr.scenario_id,
+                AVG(CAST(hr.identified_correctly AS FLOAT)) * 100 as scenario_ident_score,
+                AVG(CASE
+                    WHEN hr.identified_correctly = 1 THEN CAST(hr.correct_high_energy AS FLOAT)
+                END) * 100 as scenario_high_score,
+                AVG(CASE
+                    WHEN hr.identified_correctly = 1 THEN CAST(hr.correct_direct_control AS FLOAT)
+                END) * 100 as scenario_control_score
+            FROM hazard_responses hr
+            GROUP BY hr.energy_id, hr.scenario_id
+        )
         SELECT
             energy_id,
-            ident_score,
-            high_score,
-            control_score
-        FROM industry_benchmark
+            AVG(scenario_ident_score) as ident_score,
+            AVG(scenario_high_score) as high_score,
+            AVG(scenario_control_score) as control_score
+        FROM scenario_averages
+        GROUP BY energy_id
         ORDER BY energy_id
     """
     return db.execute_query(query)

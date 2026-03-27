@@ -23,10 +23,13 @@ class LoginResponse(BaseModel):
     username: str
     full_name: str
     email: Optional[str]
-    company_id: str
+    company_id: Optional[str]
     company_name: str
     role: str
+    title: Optional[str]
     token: str  # Simple token for now (manager_id)
+    app_access: str  # JSON string array of accessible app IDs
+    subscription_tier: str  # 'free' or 'premium'
 
 
 class UserInfo(BaseModel):
@@ -35,9 +38,12 @@ class UserInfo(BaseModel):
     username: str
     full_name: str
     email: Optional[str]
-    company_id: str
+    company_id: Optional[str]
     company_name: str
     role: str
+    title: Optional[str]
+    app_access: str  # JSON string array of accessible app IDs
+    subscription_tier: str  # 'free' or 'premium'
 
 
 @router.post("/login", response_model=LoginResponse)
@@ -65,10 +71,13 @@ async def login(credentials: LoginRequest):
         m.full_name,
         m.email,
         m.company_id,
-        c.company_name,
-        m.role
+        COALESCE(c.company_name, 'System Admin') as company_name,
+        m.role,
+        m.title,
+        m.app_access,
+        m.subscription_tier
     FROM managers m
-    JOIN companies c ON c.company_id = m.company_id
+    LEFT JOIN companies c ON c.company_id = m.company_id
     WHERE m.username = ?
     """
 
@@ -96,10 +105,13 @@ async def login(credentials: LoginRequest):
         username=result['username'],
         full_name=result['full_name'],
         email=result.get('email'),
-        company_id=result['company_id'],
+        company_id=result.get('company_id'),
         company_name=result['company_name'],
         role=result['role'],
-        token=result['manager_id']  # Simple token for now
+        title=result.get('title'),
+        token=result['manager_id'],  # Simple token for now
+        app_access=result.get('app_access', '["1"]'),  # Default to app 1
+        subscription_tier=result.get('subscription_tier', 'free')
     )
 
 
@@ -137,10 +149,13 @@ async def get_current_user(token: str):
         m.full_name,
         m.email,
         m.company_id,
-        c.company_name,
-        m.role
+        COALESCE(c.company_name, 'System Admin') as company_name,
+        m.role,
+        m.title,
+        m.app_access,
+        m.subscription_tier
     FROM managers m
-    JOIN companies c ON c.company_id = m.company_id
+    LEFT JOIN companies c ON c.company_id = m.company_id
     WHERE m.manager_id = ?
     """
 

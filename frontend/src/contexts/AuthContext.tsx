@@ -41,6 +41,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       company_id: userData.company_id,
       company_name: userData.company_name,
       role: userData.role,
+      title: userData.title,
+      app_access: userData.app_access,
+      subscription_tier: userData.subscription_tier,
     };
     setUser(userInfo);
   };

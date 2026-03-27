@@ -193,11 +193,10 @@ export function WorkersTab({ selectedProject, companyId }: WorkersTabProps) {
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load projects filtered by company
+  // Load projects filtered by company (or all if super admin)
   useEffect(() => {
-    if (companyId) {
-      projectsAPI.getAll(companyId).then(setProjects).catch(console.error);
-    }
+    const apiCall = companyId ? projectsAPI.getAll(companyId) : projectsAPI.getAll();
+    apiCall.then(setProjects).catch(console.error);
   }, [companyId]);
 
   // Update wkProject when selectedProject changes

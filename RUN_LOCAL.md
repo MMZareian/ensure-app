@@ -1,4 +1,4 @@
-# Running Ensure Safety Analytics Platform Locally
+# Running Bridge Safety Analytics Platform Locally
 
 ## Quick Start Guide - Step by Step
 
@@ -126,16 +126,6 @@ The Comparison tab shows all projects for cross-company comparison.
 ---
 
 ## Troubleshooting
-
-### Error: "TypeError: unsupported operand type(s) for |"
-
-This means you're using Python 3.8 or 3.9. The code has been updated to work with Python 3.8+.
-If you still see this error, update your Python packages:
-
-```bash
-cd C:\Users\mahdi\PycharmProjects\DigitalOcean\ensure-app\backend
-pip install -r requirements.txt --upgrade
-```
 
 ### Backend won't start
 

@@ -1,6 +1,6 @@
-# Ensure Safety Analytics - Backend
+# Bridge Safety Analytics - Backend
 
-FastAPI backend for the Ensure Safety Knowledge Management System.
+FastAPI backend for the Bridge Safety Analytics Platform.
 
 ## Setup
 
@@ -18,14 +18,7 @@ Make sure the SQLite database is in `../data/ensure_mock.sqlite`
 3. **Run the server:**
 
 ```bash
-cd app
-python main.py
-```
-
-Or use uvicorn directly:
-
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 The API will be available at: `http://localhost:8000`

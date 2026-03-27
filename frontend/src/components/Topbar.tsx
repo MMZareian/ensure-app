@@ -27,12 +27,18 @@ export function Topbar({ activeTab, onTabChange, user, onLogout }: TopbarProps) 
     .join('')
     .toUpperCase();
 
+  // Check if user has subscription_tier (for debugging)
+  const isPremium = user.subscription_tier === 'premium';
+  if (!user.subscription_tier) {
+    console.warn('User subscription_tier is missing. User may need to re-login.');
+  }
+
   return (
     <header className="topbar">
       <div className="topbar-logo">
-        <div className="logo-icon">🛡</div>
+        <img src="/Web_Logo.png" alt="Bridge" className="topbar-logo-image" />
         <div>
-          <div className="logo-name">Ensure</div>
+          <div className="logo-name">Bridge</div>
           <div className="logo-sub">Safety KMS</div>
         </div>
       </div>
@@ -53,7 +59,11 @@ export function Topbar({ activeTab, onTabChange, user, onLogout }: TopbarProps) 
 
       <div className="topbar-user">
         <div className="topbar-user-info">
-          <div className="topbar-user-name">{user.full_name}</div>
+          <div className="topbar-user-name">
+            {isPremium && <span className="premium-badge">⭐ </span>}
+            {user.full_name}
+            {isPremium && <span className="premium-text">PREMIUM</span>}
+          </div>
           <div className="topbar-user-role">{user.company_name}</div>
         </div>
         <div className="topbar-user-avatar" title={`Logout (${user.username})`} onClick={onLogout} style={{ cursor: 'pointer' }}>

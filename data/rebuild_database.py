@@ -12,6 +12,7 @@ New structure:
 
 import sqlite3
 import shutil
+import random
 from pathlib import Path
 from datetime import datetime
 
@@ -49,12 +50,15 @@ CREATE TABLE IF NOT EXISTS companies (
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS managers (
     manager_id TEXT PRIMARY KEY,
-    company_id TEXT NOT NULL,
+    company_id TEXT,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     full_name TEXT NOT NULL,
     email TEXT,
     role TEXT DEFAULT 'manager',
+    title TEXT,
+    app_access TEXT DEFAULT '["1"]',
+    subscription_tier TEXT DEFAULT 'free',
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     last_login TEXT,
     FOREIGN KEY (company_id) REFERENCES companies(company_id)
@@ -78,6 +82,7 @@ companies = [
     ('c1', 'Apex Construction Ltd', 'Construction'),
     ('c2', 'TechBuild Solutions', 'Construction'),
     ('c3', 'SafeWorks Industrial', 'Manufacturing'),
+    ('c4', 'University of Calgary', 'Education'),
 ]
 
 cursor.executemany("""
@@ -91,22 +96,29 @@ print("\nCreating manager accounts...")
 
 # Insert managers with simple passwords (in production, these should be hashed!)
 # Password format: plaintext for now (will add hashing in backend)
+# Format: (manager_id, company_id, username, password, full_name, email, role, title, app_access, subscription_tier)
 managers = [
     # Company 1: Apex Construction Ltd
-    ('m1', 'c1', 'sarah.johnson', 'password123', 'Sarah Johnson', 'sarah.j@apexconstruction.com', 'admin'),
-    ('m2', 'c1', 'mike.chen', 'password123', 'Mike Chen', 'mike.c@apexconstruction.com', 'manager'),
+    ('m1', 'c1', 'sarah.johnson', 'password123', 'Sarah Johnson', 'sarah.j@apexconstruction.com', 'admin', 'Safety Manager', '["1"]', 'free'),
+    ('m2', 'c1', 'mike.chen', 'password123', 'Mike Chen', 'mike.c@apexconstruction.com', 'manager', 'Project Coordinator', '["1"]', 'free'),
 
     # Company 2: TechBuild Solutions
-    ('m3', 'c2', 'emma.davis', 'password123', 'Emma Davis', 'emma.d@techbuild.com', 'admin'),
-    ('m4', 'c2', 'james.wilson', 'password123', 'James Wilson', 'james.w@techbuild.com', 'manager'),
+    ('m3', 'c2', 'emma.davis', 'password123', 'Emma Davis', 'emma.d@techbuild.com', 'admin', 'Safety Director', '["1"]', 'free'),
+    ('m4', 'c2', 'james.wilson', 'password123', 'James Wilson', 'james.w@techbuild.com', 'manager', 'Safety Coordinator', '["1"]', 'free'),
 
     # Company 3: SafeWorks Industrial
-    ('m5', 'c3', 'lisa.martinez', 'password123', 'Lisa Martinez', 'lisa.m@safeworks.com', 'admin'),
+    ('m5', 'c3', 'lisa.martinez', 'password123', 'Lisa Martinez', 'lisa.m@safeworks.com', 'admin', 'HSE Manager', '["1"]', 'free'),
+
+    # Company 4: University of Calgary - Premium Manager
+    ('m6', 'c4', 'Estacio.Pereira', 'UCalgary', 'Estacio Pereira', 'estacio.pereira@ucalgary.ca', 'admin', 'University Project Supervisor', '["1"]', 'premium'),
+
+    # System Admin (No company, full access to all applications) - Premium
+    ('m0', None, 'Mahdi.Zareian', 'UCalgary', 'Mahdi Zareian', 'mahdi.zareian@system.admin', 'super_admin', 'System Administrator', '["1","2","3","4","5","6"]', 'premium'),
 ]
 
 cursor.executemany("""
-INSERT OR REPLACE INTO managers (manager_id, company_id, username, password, full_name, email, role)
-VALUES (?, ?, ?, ?, ?, ?, ?)
+INSERT OR REPLACE INTO managers (manager_id, company_id, username, password, full_name, email, role, title, app_access, subscription_tier)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 """, managers)
 
 print(f"[OK] Inserted {len(managers)} manager accounts")
@@ -120,6 +132,7 @@ project_company_mapping = {
     'p3': 'c2',  # Project C → TechBuild Solutions
     'p4': 'c2',  # Project D → TechBuild Solutions
     'p5': 'c3',  # Project E → SafeWorks Industrial
+    'p6': 'c4',  # University Project → University of Calgary
 }
 
 for project_id, company_id in project_company_mapping.items():
@@ -128,6 +141,161 @@ for project_id, company_id in project_company_mapping.items():
     """, (company_id, project_id))
 
 print(f"[OK] Linked {len(project_company_mapping)} projects to companies")
+
+print("\nCreating University of Calgary project and scenarios...")
+
+# Add Project 6 - University Safety Training
+cursor.execute("""
+INSERT OR REPLACE INTO projects (id, name, region, company_id)
+VALUES ('p6', 'University Safety Training Labs', 'Calgary, Alberta', 'c4')
+""")
+print("[OK] Created project p6: University Safety Training Labs")
+
+# Generate 6 scenarios with varying student counts
+import random
+import json
+
+scenarios_data = [
+    ('g21', 'p6', 'ENF 25', '2025-01-15', 12),   # 12 students
+    ('g22', 'p6', 'ENE 22', '2025-01-22', 18),   # 18 students
+    ('g23', 'p6', 'ENF 14', '2025-02-05', 15),   # 15 students
+    ('g24', 'p6', 'ENF 030', '2025-02-19', 10),  # 10 students
+    ('g25', 'p6', 'ENF 006', '2025-03-03', 20),  # 20 students
+    ('g26', 'p6', 'ENE 329', '2025-03-17', 14),  # 14 students
+]
+
+# Create pool of unique student IDs (50 total unique students for University)
+# Format: STU_XXXXXX (6-digit random number)
+student_id_pool = []
+student_skills = {}  # Track skill level for each student
+used_ids = set()
+
+for i in range(50):
+    while True:
+        student_id = f"STU_{random.randint(100000, 999999)}"
+        if student_id not in used_ids:
+            used_ids.add(student_id)
+            student_id_pool.append(student_id)
+            # Assign consistent skill level for this student (0.4 to 0.95)
+            student_skills[student_id] = 0.4 + (random.random() * 0.55)
+            break
+
+# Generate scenarios
+total_student_enrollments = 0
+for scenario_idx, (scenario_id, project_id, scenario_name, date, student_count) in enumerate(scenarios_data):
+    cursor.execute("""
+    INSERT OR REPLACE INTO scenarios (scenario_id, project_id, scenario_name, scenario_date, scenario_order, expected_worker_count)
+    VALUES (?, ?, ?, ?, ?, ?)
+    """, (scenario_id, project_id, scenario_name, date, scenario_idx, student_count))
+
+    # Select students for this scenario
+    # 70% chance to reuse students from previous scenarios
+    # 30% chance to introduce new students
+    selected_students = []
+
+    # If not first scenario, potentially reuse some students
+    if scenario_idx > 0 and len(student_id_pool) > student_count:
+        # Reuse 20-40% of students from earlier courses
+        reuse_count = random.randint(int(student_count * 0.2), int(student_count * 0.4))
+        reuse_count = min(reuse_count, scenario_idx * 3)  # Limit based on how many scenarios we've done
+
+        # Get some already-used students
+        cursor.execute("""
+        SELECT DISTINCT worker_id FROM workers
+        WHERE project_id = ? AND worker_id LIKE 'STU_%'
+        ORDER BY RANDOM() LIMIT ?
+        """, (project_id, reuse_count))
+
+        reused = [row[0] for row in cursor.fetchall()]
+        selected_students.extend(reused)
+
+    # Fill remaining slots with new students from pool
+    remaining_count = student_count - len(selected_students)
+    available_new = [sid for sid in student_id_pool if sid not in selected_students]
+    selected_students.extend(random.sample(available_new, min(remaining_count, len(available_new))))
+
+    # If we still need more, just sample from the entire pool
+    while len(selected_students) < student_count:
+        student_id = random.choice(student_id_pool)
+        if student_id not in selected_students:
+            selected_students.append(student_id)
+
+    # Shuffle to randomize order
+    random.shuffle(selected_students)
+
+    # Generate workers (students) for this scenario
+    for student_id in selected_students:
+        total_student_enrollments += 1
+
+        cursor.execute("""
+        INSERT OR REPLACE INTO workers (worker_id, project_id, worker_name, role, experience_band)
+        VALUES (?, ?, ?, ?, ?)
+        """, (student_id, project_id, student_id, 'Student', 'Beginner'))
+
+        # Get all energy types
+        cursor.execute("SELECT id FROM energy_types ORDER BY id")
+        energy_type_ids = [row[0] for row in cursor.fetchall()]
+
+        # Use consistent skill level for this student
+        student_skill = student_skills[student_id]
+
+        # If student has taken courses before, slightly improve their skill
+        cursor.execute("""
+        SELECT COUNT(DISTINCT scenario_id) FROM hazard_responses
+        WHERE worker_id = ? AND project_id = ?
+        """, (student_id, project_id))
+
+        previous_courses = cursor.fetchone()[0]
+        skill_improvement = min(previous_courses * 0.05, 0.15)  # Max 15% improvement
+        adjusted_skill = min(student_skill + skill_improvement, 0.95)
+
+        for energy_id in energy_type_ids:
+            # Randomize responses based on student skill level
+            identified = random.random() < (0.5 + adjusted_skill * 0.5)  # 50-95% identification
+
+            if identified:
+                # If identified, check high energy classification
+                marked_high = random.random() < (0.4 + adjusted_skill * 0.6)  # 40-100% mark as high
+                correct_high = random.random() < (0.5 + adjusted_skill * 0.5)  # 50-95% correct
+
+                # Check direct control classification
+                marked_control = random.random() < (0.4 + adjusted_skill * 0.6)
+                correct_control = random.random() < (0.5 + adjusted_skill * 0.5)
+            else:
+                # Not identified - no classifications
+                marked_high = False
+                correct_high = False
+                marked_control = False
+                correct_control = False
+
+            cursor.execute("""
+            INSERT OR REPLACE INTO hazard_responses
+            (scenario_id, project_id, worker_id, worker_name, energy_id, identified_correctly,
+             marked_high_energy, correct_high_energy, marked_direct_control, correct_direct_control)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                scenario_id,
+                project_id,
+                student_id,
+                student_id,  # Use student_id as display name
+                energy_id,
+                1 if identified else 0,
+                1 if marked_high else 0,
+                1 if correct_high else 0,
+                1 if marked_control else 0,
+                1 if correct_control else 0
+            ))
+
+# Count unique students
+cursor.execute("""
+SELECT COUNT(DISTINCT worker_id) FROM workers
+WHERE project_id = 'p6' AND worker_id LIKE 'STU_%'
+""")
+unique_students = cursor.fetchone()[0]
+
+print(f"[OK] Created {len(scenarios_data)} scenarios with varied student counts")
+print(f"[OK] Generated {total_student_enrollments} total student enrollments ({unique_students} unique students)")
+print(f"[OK] Some students appear in multiple courses to demonstrate progress tracking")
 
 # Commit changes
 conn.commit()
@@ -168,17 +336,21 @@ SELECT
     m.username,
     m.password,
     m.full_name,
-    c.company_name,
-    m.role
+    COALESCE(c.company_name, 'System Admin'),
+    m.title,
+    m.role,
+    m.subscription_tier,
+    m.app_access
 FROM managers m
-JOIN companies c ON c.company_id = m.company_id
-ORDER BY c.company_name, m.username
+LEFT JOIN companies c ON c.company_id = m.company_id
+ORDER BY m.role DESC, m.subscription_tier DESC, c.company_name, m.username
 """)
 
-print(f"{'Username':<20} {'Password':<15} {'Name':<20} {'Company':<25} {'Role':<10}")
-print("-" * 95)
+print(f"{'Username':<20} {'Password':<12} {'Name':<20} {'Company':<28} {'Title':<30} {'Tier':<10}")
+print("-" * 130)
 for row in cursor.fetchall():
-    print(f"{row[0]:<20} {row[1]:<15} {row[2]:<20} {row[3]:<25} {row[4]:<10}")
+    tier_badge = "PREMIUM" if row[6] == 'premium' else "FREE"
+    print(f"{row[0]:<20} {row[1]:<12} {row[2]:<20} {row[3]:<28} {row[4] or 'N/A':<30} {tier_badge:<10}")
 
 conn.close()
 

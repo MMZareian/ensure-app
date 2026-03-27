@@ -27,11 +27,10 @@ export function ScenariosTab({ selectedProject, onProjectChange: _onProjectChang
   const [scenarioDetail, setScenarioDetail] = useState<ScenarioDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Load projects filtered by company
+  // Load projects filtered by company (or all if super admin)
   useEffect(() => {
-    if (companyId) {
-      projectsAPI.getAll(companyId).then(setProjects).catch(console.error);
-    }
+    const apiCall = companyId ? projectsAPI.getAll(companyId) : projectsAPI.getAll();
+    apiCall.then(setProjects).catch(console.error);
   }, [companyId]);
 
   // Load scenarios for selected project
