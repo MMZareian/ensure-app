@@ -29,9 +29,9 @@ const APPLICATIONS: Application[] = [
   },
   {
     id: '3',
-    name: 'Application 3',
-    description: 'Coming Soon',
-    logo: '/InDevelopment_Logo.png',
+    name: 'SafeTalk',
+    description: 'Communication & Collaboration',
+    logo: '/SafeTalk_Logo.png',
     status: 'development',
   },
   {
