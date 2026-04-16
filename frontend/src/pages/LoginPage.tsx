@@ -44,12 +44,12 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
       <div className="login-box">
         {/* Logo and Title */}
         <div className="login-header">
-          <div className="login-logo">
-            <img src="/Web_Logo.png" alt="Bridge Logo" className="logo-image" />
-            <div>
-              <h1 className="login-title">Bridge</h1>
-              <p className="login-subtitle">Safety Analytics Platform</p>
-            </div>
+          <div className="login-logo-container">
+            <img src="/Web_Logo.png" alt="Bridge Logo" className="login-logo-image" />
+          </div>
+          <div className="login-title-container">
+            <h1 className="login-title">Bridge</h1>
+            <p className="login-subtitle">Safety Analytics Platform</p>
           </div>
         </div>
 

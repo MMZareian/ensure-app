@@ -58,21 +58,18 @@ export function ComparisonTab() {
       .finally(() => setLoading(false));
   }, [cmpProjects, radarMode]);
 
-  // Load table data when table projects change OR when radar projects change (for comparison messages)
+  // Load table data when table projects change
   useEffect(() => {
-    // Use radar projects (cmpProjects) if industry is included, otherwise use table projects
-    const projectsToLoad = cmpProjects.includes('industry') ? cmpProjects : cmpTableProjects;
+    if (cmpTableProjects.length === 0) return;
 
-    if (projectsToLoad.length === 0) return;
-
-    const includeIndustry = projectsToLoad.includes('industry');
-    const projectIds = projectsToLoad.filter((id) => id !== 'industry');
+    const includeIndustry = cmpTableProjects.includes('industry');
+    const projectIds = cmpTableProjects.filter((id) => id !== 'industry');
 
     comparisonAPI
       .getTableData(projectIds, includeIndustry)
       .then(setTableData)
       .catch(console.error);
-  }, [cmpTableProjects, cmpProjects]);
+  }, [cmpTableProjects]);
 
   function toggleCmpProject(pid: string) {
     setCmpProjects((prev) => {
